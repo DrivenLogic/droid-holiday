@@ -1,0 +1,29 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.6.+'
+    }
+}
+apply plugin: 'android'
+
+repositories {
+    mavenCentral()
+}
+
+android {
+    compileSdkVersion 8
+    buildToolsVersion "19.0.0"
+
+    defaultConfig {
+        minSdkVersion 7
+        targetSdkVersion 8
+    }
+}
+
+dependencies {
+    compile files('lib/jmdns-3.4.1.jar')
+    //compile 'javax.jmdns:jmdns:3.4.1'
+    //compile 'com.github.rickyclarkson:jmdns:3.4.2-r353-1'
+}
