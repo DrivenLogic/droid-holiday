@@ -4,6 +4,9 @@ Socket Execption issued from jmdns constructor when wifi is off
 
 #gradle commands
 
+./gradlew clean
+./gradlew build
+
 # devices
 
 # Galaxy S3
@@ -26,3 +29,7 @@ Socket Execption issued from jmdns constructor when wifi is off
 //                    {
 //                        Log.i(TAG,serviceInfos[i].getQualifiedName());
 //                    }
+
+# known bugs
+
+java.lang.RuntimeException: MulticastLock under-locked multiCastLock

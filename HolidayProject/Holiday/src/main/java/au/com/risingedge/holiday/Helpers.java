@@ -1,6 +1,9 @@
 package au.com.risingedge.holiday;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.util.Log;
+import android.content.DialogInterface;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -36,5 +39,22 @@ public class Helpers {
             Log.e(TAG, "Error when looking up IP address", ex);
         }
         return null;
+    }
+
+    ///
+    /// builds an OK dialog box and shows it in the given context
+    ///
+    public static void Alert(String string, Context context)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage(string)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //do things
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 }

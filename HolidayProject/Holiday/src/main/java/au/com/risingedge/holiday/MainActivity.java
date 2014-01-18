@@ -2,7 +2,6 @@ package au.com.risingedge.holiday;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceListener;
-import javax.jmdns.ServiceInfo;
 
 import android.app.Activity;
 import android.content.Context;
@@ -21,6 +20,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 import java.io.IOException;
+
+import static au.com.risingedge.holiday.Helpers.Alert;
 
 public class MainActivity extends Activity {
 
@@ -51,14 +52,14 @@ public class MainActivity extends Activity {
 
         if (!wifiManager.isWifiEnabled()){
             Log.w(TAG,"WiFi is off! - Can't scan - please enable WiFi");
-
+            Alert("WiFi is off! - Can't scan - please enable WiFi", _context);
             // TODO: show user a dialog
         }
         else
         {
             // Take multicast lock
             _multicastLock = wifiManager.createMulticastLock("multiCastLock");
-            _multicastLock.setReferenceCounted(true);
+            _multicastLock.setReferenceCounted(false);
             _multicastLock.acquire();
 
             // Start scan
@@ -90,6 +91,7 @@ public class MainActivity extends Activity {
                 catch (IOException e) {
                     e.printStackTrace();
                     Log.e(TAG,"Error on jmDNS setup",e);
+                    Alert("Error on jmDNS setup " + e.getMessage(), _context);
                     return;
                 }
             }},500);
@@ -141,6 +143,7 @@ public class MainActivity extends Activity {
 
                 e.printStackTrace();
                 Log.e(TAG,"Error on stopping",e);
+                Alert("Error on stop " + e.getMessage(), _context);
             }
             _jmdns = null;
         }

@@ -5,6 +5,8 @@ package au.com.risingedge.holiday;
 
 import android.util.Log;
 
+import static au.com.risingedge.holiday.Helpers.Alert;
+
 public class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler
 {
 	private static final String TAG = "holiday" + DefaultExceptionHandler.class.getName();
