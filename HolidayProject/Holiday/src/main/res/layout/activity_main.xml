@@ -7,21 +7,11 @@
     tools:ignore="MergeRootFrame" >
 
     <LinearLayout
+        android:id="@+id/verticalLinearLayout"
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_gravity="center_horizontal|top">
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_gravity="left|top"
-            android:id="@+id/horizontalLinearLayout"
-            >
-
         </LinearLayout>
-
-    </LinearLayout>
-
 
 </FrameLayout>

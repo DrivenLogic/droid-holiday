@@ -18,4 +18,11 @@ Socket Execption issued from jmdns constructor when wifi is off
 /home/stonie/software.packages/android-studio/sdk/platform-tools
 ./adb logcat
 
+#List all services:
 
+//                    ServiceInfo[] serviceInfos = jmdns.list("_iotas._tcp.local.");
+
+//                    for(int i =0; i < serviceInfos.length; i++)
+//                    {
+//                        Log.i(TAG,serviceInfos[i].getQualifiedName());
+//                    }
