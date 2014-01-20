@@ -5,13 +5,18 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity"
     tools:ignore="MergeRootFrame" >
-
-    <LinearLayout
-        android:id="@+id/verticalLinearLayout"
-        android:orientation="vertical"
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/scroll"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_gravity="center_horizontal|top">
-        </LinearLayout>
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:id="@+id/verticalLinearLayout"
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center_horizontal|top">
 
+        </LinearLayout>
+    </ScrollView>
 </FrameLayout>
