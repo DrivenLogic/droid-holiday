@@ -11,7 +11,6 @@ import android.view.WindowManager;
 public class MainActivity extends Activity {
 
     private static final String TAG = "holidayMainActivity";
-    private Thread _scannerThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,8 +26,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         // run scan task
-        _scannerThread = new Thread(new MdnsRunnable(this,new Handler()));
-        _scannerThread.start();
+        new MdnsAsyncTask(this).execute();
     }
 
     @Override
@@ -43,9 +41,6 @@ public class MainActivity extends Activity {
     ///
     @Override
     protected void onStop() {
-
-        // interrupt the scanner and clean up.
-        _scannerThread.interrupt();
 
         super.onStop();
     }

@@ -51,14 +51,14 @@ public class Helpers {
     ///
     /// builds an OK dialog box and shows it in the given context
     ///
-    public static void Alert(String string, Context context, Handler handler)
+    public static void Alert(String string, Context context)
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(string)
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        //do things
+                        System.exit(1); // this dialog assumes that for it to be shown it a result of a non-recoverable situation.
                     }
                 });
         AlertDialog alert = builder.create();
@@ -68,11 +68,10 @@ public class Helpers {
     ///
     /// Helper to add the controls for each located device
     ///
-    public static void AddDynamicHolidayControls(Activity activity, String deviceHostname, String url)
+    public static void AddHolidayControls(Activity activity, String deviceHostname, String url)
     {
         Log.i(TAG, "Creating device button - " + deviceHostname);
         LinearLayout linearLayout = (LinearLayout) activity.findViewById(R.id.verticalLinearLayout);
-        //  LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
         ImageView imageView = new ImageView(activity);
         imageView.setOnClickListener(new HolidayClickListener(url, activity));
@@ -82,6 +81,22 @@ public class Helpers {
         TextView textView = new TextView(activity);
         textView.setOnClickListener(new HolidayClickListener(url, activity));
         textView.setText(deviceHostname);
+        textView.setTypeface(Typeface.DEFAULT_BOLD);
+        textView.setGravity(Gravity.CENTER);
+        linearLayout.addView(textView);
+    }
+
+    ///
+    /// Helper to add the controls for each located device
+    ///
+    public static void AddNotFoundControls(Activity activity)
+    {
+        Log.i(TAG, "Creating no results controls ");
+
+        LinearLayout linearLayout = (LinearLayout) activity.findViewById(R.id.verticalLinearLayout);
+
+        TextView textView = new TextView(activity);
+        textView.setText("Holiday not found");
         textView.setTypeface(Typeface.DEFAULT_BOLD);
         textView.setGravity(Gravity.CENTER);
         linearLayout.addView(textView);

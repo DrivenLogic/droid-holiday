@@ -26,7 +26,6 @@ public class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler
 
         Log.e(TAG,"Thread unhandled exception handler fired.",throwable);
 
-        // exit the application to prevent the home default being reset when we crash
         System.exit(1);
     }
 }
