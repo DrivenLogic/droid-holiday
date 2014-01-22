@@ -61,6 +61,8 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
                 _multicastLock = _wifiManager.createMulticastLock("lockString");
                 _multicastLock.acquire();
 
+                Log.i(TAG, "MultiCast Lock State: " + _multicastLock.isHeld());
+
                 String ipAddress = Helpers.getLocalInetAddress().getHostAddress();
                 Log.i(TAG, "Local IP Address is: " + ipAddress);
 
