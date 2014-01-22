@@ -2,7 +2,6 @@ package au.com.risingedge.holiday;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -12,8 +11,6 @@ import java.io.IOException;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
-
-import static au.com.risingedge.holiday.Helpers.Alert;
 
 public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
 
@@ -43,17 +40,12 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
     ///
     @Override
     protected void onPreExecute() {
+
         _wifiManager = (WifiManager) _activity.getSystemService(android.content.Context.WIFI_SERVICE);
 
-        if (!_wifiManager.isWifiEnabled()) {
-            Log.w(TAG, "WiFi is off! - Can't scan - user needs to enable WiFi");
-            Alert("Please enable WiFi", _activity);
-
-        } else {
-        _progressDialog = new ProgressDialog(_activity);
-        _progressDialog.setMessage("Looking for Holiday...");
-        _progressDialog.show();
-        }
+         _progressDialog = new ProgressDialog(_activity);
+         _progressDialog.setMessage("Looking for Holiday...");
+         _progressDialog.show();
 
         super.onPreExecute();
     }
@@ -73,7 +65,7 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
                 Log.i(TAG, "Local IP Address is: " + ipAddress);
 
                 _jmdns = JmDNS.create(Helpers.getLocalInetAddress(), ipAddress);
-                _locatedMdnsServices = _jmdns.list(_mdnsServiceType); // list services.
+                _locatedMdnsServices = _jmdns.list(_mdnsServiceType,3000); // list services.
 
                 // release lock
                 _multicastLock.release();

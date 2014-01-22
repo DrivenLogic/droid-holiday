@@ -16,7 +16,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.logging.Handler;
 
 ///
 /// Class for helper methods that don't fit with types.
@@ -49,9 +48,9 @@ public class Helpers {
     }
 
     ///
-    /// builds an OK dialog box and shows it in the given context
+    /// builds an OK dialog box and shows it in the given context.
     ///
-    public static void Alert(String string, Context context)
+    public static void AlertFatal(String string, Context context)
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(string)
