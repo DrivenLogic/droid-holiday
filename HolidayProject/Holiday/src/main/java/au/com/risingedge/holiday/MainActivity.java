@@ -39,6 +39,7 @@ public class MainActivity extends Activity {
         } else {
             // run scan task
             new MdnsAsyncTask(this).execute();
+
         }
     }
 
@@ -66,7 +67,11 @@ public class MainActivity extends Activity {
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse("http://support.moorescloud.com/help/android/"));
                 this.startActivity(i);
+                return true;
 
+            case R.id.action_sendLogs:
+                // ship logs
+                new LogShipperAsyncTask(this).execute();
                 return true;
         }
         return super.onOptionsItemSelected(item);

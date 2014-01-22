@@ -67,7 +67,7 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
                 Log.i(TAG, "Local IP Address is: " + ipAddress);
 
                 _jmdns = JmDNS.create(Helpers.getLocalInetAddress(), ipAddress);
-                _locatedMdnsServices = _jmdns.list(_mdnsServiceType,3000); // list services.
+                _locatedMdnsServices = _jmdns.list(_mdnsServiceType); // list services.
 
                 // release lock
                 _multicastLock.release();
@@ -84,8 +84,7 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
                     } catch (IOException e) {
 
                         e.printStackTrace();
-                        Log.e(TAG, "Error on stopping", e);
-                        //Alert("Error on stop " + e.getMessage(), _activity);
+                        Log.e(TAG, "Error on stopping jmDNS", e);
                     }
                     _jmdns = null;
                 }
