@@ -27,11 +27,10 @@ public class SplashScreen extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        // splash!
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                // This method will be executed once the timer is over
-                // Start your app main activity
                 Intent i = new Intent(SplashScreen.this, MainActivity.class);
                 startActivity(i);
 
@@ -40,5 +39,4 @@ public class SplashScreen extends Activity {
             }
         }, SPLASH_TIME_OUT);
     }
-
 }

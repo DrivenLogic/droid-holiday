@@ -14,8 +14,8 @@ public class HolidayClickListener implements View.OnClickListener
     Activity _activity;
 
     public HolidayClickListener(String url, Activity activity) {
-        this._url = url;
-        this._activity = activity;
+        _url = url;
+        _activity = activity;
     }
 
     @Override

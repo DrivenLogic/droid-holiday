@@ -1,0 +1,99 @@
+Nmap scan report for holiday-ac2450.drivenlogic.lan (192.168.1.104)
+Host is up (0.031s latency).
+Not shown: 1987 closed ports
+PORT      STATE         SERVICE      VERSION
+80/tcp    open          http?
+|_http-favicon: Unknown favicon MD5: F30E28264E6713F8A126DD3B5FEFB7C9
+|_http-methods: GET HEAD
+|_http-title: Holiday Apps
+7/udp     open|filtered echo
+138/udp   open|filtered netbios-dgm
+1055/udp  open|filtered ansyslmd
+1057/udp  open|filtered startron
+1124/udp  open|filtered hpvmmcontrol
+5353/udp  open          mdns         DNS-based service discovery
+| dns-service-discovery: 
+|   9/tcp workstation
+|     Address=192.168.1.104 fe80:0:0:0:20d:81ff:feac:2450
+|   22/tcp sftp-ssh
+|     Address=192.168.1.104 fe80:0:0:0:20d:81ff:feac:2450
+|   22/tcp ssh
+|     Address=192.168.1.104 fe80:0:0:0:20d:81ff:feac:2450
+|   80/tcp iotas
+|     {"manufacturer": "MooresCloud", "product": "Holiday", "version": "1", "api_version": "1.0b3", "globes": "50"}
+|     Address=192.168.1.104 fe80:0:0:0:20d:81ff:feac:2450
+|   9988/udp secretapi
+|     {"manufacturer": "MooresCloud", "product": "Holiday", "version": "1", "api_version": "1.0b3", "globes": "50"}
+|_    Address=192.168.1.104 fe80:0:0:0:20d:81ff:feac:2450
+16766/udp open|filtered unknown
+16829/udp open|filtered unknown
+18835/udp open|filtered unknown
+27473/udp open|filtered unknown
+37444/udp open|filtered unknown
+39723/udp open|filtered unknown
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at http://www.insecure.org/cgi-bin/servicefp-submit.cgi :
+SF-Port80-TCP:V=6.40%I=7%D=1/23%Time=52DFDA25%P=x86_64-unknown-linux-gnu%r
+SF:(GetRequest,139C,"HTTP/1\.1\x20200\x20OK\r\nLast-Modified:\x20Fri,\x201
+SF:8\x20Oct\x202013\x2023:46:34\x20GMT\r\nContent-Length:\x204825\r\nConte
+SF:nt-Type:\x20text/html\r\nAccept-Ranges:\x20bytes\r\nDate:\x20Thu,\x2001
+SF:\x20Jan\x201970\x2014:58:17\x20GMT\r\nServer:\x20holiday-ac2450\r\n\r\n
+SF:<!DOCTYPE\x20html>\n<html>\n<head>\n\t\n\t<title>Holiday\x20Apps</title
+SF:>\n\t\n\t<meta\x20name=\"viewport\"\x20content=\"width=device-width,\x2
+SF:0initial-scale=1\">\n\t<meta\x20name=\"apple-mobile-web-app-capable\"\x
+SF:20content=\"yes\"\x20/>\n\t\n\t<link\x20rel=\"apple-touch-icon\"\x20hre
+SF:f=\"\./assets/apple-touch-icon-57x57\.png\"\x20/>\n\t<link\x20rel=\"app
+SF:le-touch-icon\"\x20sizes=\"72x72\"\x20href=\"\./assets/apple-touch-icon
+SF:-72x72\.png\"\x20/>\n\t<link\x20rel=\"apple-touch-icon\"\x20sizes=\"114
+SF:x114\"\x20href=\"\./assets/apple-touch-icon-114x114\.png\"\x20/>\n\t<li
+SF:nk\x20rel=\"apple-touch-icon\"\x20sizes=\"144x144\"\x20href=\"\./assets
+SF:/apple-touch-icon-144x144\.png\"\x20/>\n\t<link\x20rel=\"apple-touch-st
+SF:artup-image\"\x20href=\"\./assets/apple-touch-splash\.png\">\n\t\n\t<li
+SF:nk\x20rel=\"stylesheet\"\x20href=\"\./css/jquery\.mobile-1\.4\.0-beta\.
+SF:1\.css\"\x20/>\n\t<li")%r(HTTPOptions,38B,"HTTP/1\.1\x20405\x20Method\x
+SF:20Not\x20Allowed\r\nContent-Length:\x20733\r\nContent-Type:\x20text/htm
+SF:l;\x20charset=UTF-8\r\nAllow:\x20GET,HEAD\r\nDate:\x20Thu,\x2001\x20Jan
+SF:\x201970\x2014:58:17\x20GMT\r\nServer:\x20holiday-ac2450\r\n\r\n\n\x20\
+SF:x20\x20\x20<!DOCTYPE\x20HTML\x20PUBLIC\x20\"-//IETF//DTD\x20HTML\x202\.
+SF:0//EN\">\n\x20\x20\x20\x20<html>\n\x20\x20\x20\x20\x20\x20\x20\x20<head
+SF:>\n\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<title>Error:\x20405
+SF:\x20Method\x20Not\x20Allowed</title>\n\x20\x20\x20\x20\x20\x20\x20\x20\
+SF:x20\x20\x20\x20<style\x20type=\"text/css\">\n\x20\x20\x20\x20\x20\x20\x
+SF:20\x20\x20\x20\x20\x20\x20\x20html\x20{background-color:\x20#eee;\x20fo
+SF:nt-family:\x20sans;}\n\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\
+SF:x20\x20body\x20{background-color:\x20#fff;\x20border:\x201px\x20solid\x
+SF:20#ddd;\n\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x
+SF:20\x20\x20\x20\x20padding:\x2015px;\x20margin:\x2015px;}\n\x20\x20\x20\
+SF:x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20pre\x20{background-color:\x2
+SF:0#eee;\x20border:\x201px\x20solid\x20#ddd;\x20padding:\x205px;}\n\x20\x
+SF:20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</style>\n\x20\x20\x20\x20\x2
+SF:0\x20\x20\x20</head>\n\x20\x20\x20\x20\x20\x20\x20\x20<body>\n\x20\x20\
+SF:x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h1>Error:\x20405\x20Method\x20N
+SF:ot\x20Allowed</h1>\n\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p>
+SF:Sorry,\x20the\x20requested\x20URL\x20<tt>&#039;http://holiday-ac2450/&#
+SF:039;</tt>\n\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20
+SF:caused\x20an\x20error:</p>\n\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x2
+SF:0\x20<pre>Method\x20not\x20allowed\.</pre>\n\x20\x20\x20\x20\x20\x20\x2
+SF:0\x20</body>\n\x20\x20\x20\x20<");
+MAC Address: 00:0D:81:AC:24:50 (Pepperl+Fuchs GmbH)
+Device type: general purpose
+Running: Linux 2.6.X
+OS CPE: cpe:/o:linux:linux_kernel:2.6
+OS details: Linux 2.6.16 - 2.6.35 (embedded)
+Uptime guess: 0.624 days (since Wed Jan 22 10:54:55 2014)
+Network Distance: 1 hop
+TCP Sequence Prediction: Difficulty=202 (Good luck!)
+IP ID Sequence Generation: All zeros
+
+TRACEROUTE
+HOP RTT      ADDRESS
+1   31.11 ms holiday-ac2450.drivenlogic.lan (192.168.1.104)
+
+Nmap scan report for dev-droid.drivenlogic.lan (192.168.1.106)
+Host is up (0.031s latency).
+Not shown: 1998 closed ports
+PORT      STATE         SERVICE VERSION
+19047/udp open|filtered unknown
+39723/udp open|filtered unknown
+MAC Address: BC:B1:F3:06:3F:40 (Samsung Electronics)
+Too many fingerprints match this host to give specific OS details
+Network Distance: 1 hop

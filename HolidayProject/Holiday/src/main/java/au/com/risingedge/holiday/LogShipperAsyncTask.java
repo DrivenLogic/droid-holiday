@@ -18,12 +18,8 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
     private static final String TAG = LogShipperAsyncTask.class.getName();
     private final static String LINE_SEPARATOR = System.getProperty("line.separator");
     private Activity _activity;
-
     private String exception;
 
-    ///
-    /// ctor - pass in activity
-    ///
     LogShipperAsyncTask(Activity activity) {
 
         _activity = activity;

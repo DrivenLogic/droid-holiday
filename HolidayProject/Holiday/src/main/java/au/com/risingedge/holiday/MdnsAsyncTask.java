@@ -1,58 +1,41 @@
 package au.com.risingedge.holiday;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.util.Log;
-
 import java.io.IOException;
-
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
-import javax.jmdns.ServiceListener;
 
+///
+/// MDNS scan as a task
+///
+/// waits for all results before returning
+///
 public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
 
     private static final String TAG = "HolidayMdnsAsyncTask";
 
-    WifiManager.MulticastLock _multicastLock;
+    private WifiManager.MulticastLock _multicastLock;
     private String _mdnsServiceType = "_iotas._tcp.local."; // _service._protocol.local.
-    private JmDNS _jmdns = null;
-    private ServiceListener _mdnsServicelistener = null;
-    ProgressDialog _progressDialog;
-    private Activity _activity;
-    ServiceInfo[] _locatedMdnsServices;
-    WifiManager _wifiManager;
+    private JmDNS _jmdns;
+    private ServiceInfo[] _locatedMdnsServices;
+    private WifiManager _wifiManager;
+    private IMdnsCallbackListener _callbackListener;
 
-    ///
-    /// ctor - pass in activity
-    ///
-    MdnsAsyncTask(Activity activity) {
-        // catch unhandled worker Exceptions
-        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
+    MdnsAsyncTask(IMdnsCallbackListener callbackListener, WifiManager wifiManager) {
 
-        _activity = activity;
+        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler()); // TODO: Move to app class.
+        _callbackListener = callbackListener;
+        _wifiManager = wifiManager;
     }
 
-    ///
-    /// Runs on the UI thread
-    ///
     @Override
     protected void onPreExecute() {
-
-        _wifiManager = (WifiManager) _activity.getSystemService(android.content.Context.WIFI_SERVICE);
-
-         _progressDialog = new ProgressDialog(_activity);
-         _progressDialog.setMessage("Looking for Holiday...");
-         _progressDialog.show();
-
+        _callbackListener.TaskBusy("Looking for Holiday...");
         super.onPreExecute();
     }
 
-    ///
-    /// Runs on a thread pool thread
-    ///
     @Override
     protected Void doInBackground(Void... voids) {
             try {
@@ -61,7 +44,7 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
                 _multicastLock = _wifiManager.createMulticastLock("lockString");
                 _multicastLock.acquire();
 
-                Log.i(TAG, "MultiCast Lock State: " + _multicastLock.isHeld());
+                Log.i(TAG, "MultiCast Lock State: " + _multicastLock.isHeld()); // This is still 'true' when disabled in firmware >:/
 
                 String ipAddress = Helpers.getLocalInetAddress().getHostAddress();
                 Log.i(TAG, "Local IP Address is: " + ipAddress);
@@ -71,23 +54,6 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
 
                 // release lock
                 _multicastLock.release();
-
-                // clean up jmdms
-                if (_jmdns != null) {
-                    if (_mdnsServicelistener != null) {
-                        _jmdns.removeServiceListener(_mdnsServiceType, _mdnsServicelistener);
-                        _mdnsServicelistener = null;
-                    }
-                    _jmdns.unregisterAllServices();
-                    try {
-                        _jmdns.close();
-                    } catch (IOException e) {
-
-                        e.printStackTrace();
-                        Log.e(TAG, "Error on stopping jmDNS", e);
-                    }
-                    _jmdns = null;
-                }
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -99,32 +65,19 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onPostExecute(Void v) {
-
-        if(_progressDialog!=null && _progressDialog.isShowing())
-        {
-            //hide the dialog
-            _progressDialog.dismiss();
-        }
-
         if (_locatedMdnsServices == null || _locatedMdnsServices.length <= 0) {
 
             Log.i(TAG, "Did not find any holiday devices on network");
-            Helpers.AddNotFoundControls(_activity);
-
         } else {
 
             Log.i(TAG, "Adding controls to UI ");
 
             for (ServiceInfo serviceInfo : _locatedMdnsServices) {
-                Log.i(TAG, serviceInfo.getName());
-                Log.i(TAG, serviceInfo.getURLs()[0]);
-
-                Helpers.AddHolidayControls(
-                        _activity,
-                        serviceInfo.getName(),
-                        serviceInfo.getURLs()[0]);
+                _callbackListener.ServiceLocated(new ServiceResult(serviceInfo.getURL(),serviceInfo.getName()));
             }
         }
+        _callbackListener.TaskCompleted();
+
         super.onPostExecute(v);
     }
 }

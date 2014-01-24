@@ -1,13 +1,10 @@
 
-#exception handling
-Socket Execption issued from jmdns constructor when wifi is off
-
 #gradle commands
 
 ./gradlew clean
 ./gradlew build
 
-# devices
+# devices udev 
 
 # Galaxy S3
 [ 4502.594364] usb 1-1.2: New USB device found, idVendor=04e8, idProduct=6860
@@ -21,15 +18,7 @@ Socket Execption issued from jmdns constructor when wifi is off
 /home/stonie/software.packages/android-studio/sdk/platform-tools
 ./adb logcat
 
-#List all services:
+# API Test
 
-//                    ServiceInfo[] serviceInfos = jmdns.list("_iotas._tcp.local.");
+curl -X PUT -d @red.json http://192.168.1.104/iotas/0.1/device/moorescloud.holiday/localhost/setlights
 
-//                    for(int i =0; i < serviceInfos.length; i++)
-//                    {
-//                        Log.i(TAG,serviceInfos[i].getQualifiedName());
-//                    }
-
-# known bugs
-
-java.lang.RuntimeException: MulticastLock under-locked multiCastLock

@@ -7,11 +7,12 @@ package au.com.risingedge.holiday;
 import android.util.Log;
 
 ///
-/// Unhandled exceptions end up here.
+/// Unhandled exceptions
+/// TODO: move to application class.
 ///
 public class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler
 {
-	private static final String TAG = "holidayDefaultExceptionHandler" + DefaultExceptionHandler.class.getName();
+	private static final String TAG = "holidayDefaultExceptionHandler";
 
     public DefaultExceptionHandler()
     {
