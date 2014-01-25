@@ -1,16 +1,22 @@
+/**
+ * Holiday For Android - http://moorescloud.com
+ *
+ * */
 package au.com.risingedge.holiday;
 
-
-import javax.jmdns.ServiceInfo;
-
+/**
+ *  An Interface that describes scan events
+ *
+ *  @author andrew.stone@drivenlogic.com.au
+ */
 public interface IMdnsCallbackListener {
 
-    // Found a Service
+    /** Found a Service */
     void ServiceLocated(ServiceResult serviceResult);
 
-    // Task is looking for services
+    /** Task is looking for services */
     void TaskBusy(String message);
 
-    // Task is done
+    /** done looking */
     void TaskCompleted();
 }

@@ -1,22 +1,33 @@
+/**
+ * Holiday For Android - http://moorescloud.com
+ *
+ * */
 package au.com.risingedge.holiday;
-import android.util.Log;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
-///
-/// helper methods that don't fit with types.
-///
-public class Helpers {
+/**
+ * Query the underling network devices on the device
+ *
+ * @author andrew.stone@drivenlogic.com.au
+ */
+public class NetworkInfrastructure {
 
-    private static final String TAG = "holidayHelpers";
+    private Logger _log = LoggerFactory.getLogger(NetworkInfrastructure.class);
 
-    ///
-    /// Get local IP Address.
-    //
-    public static InetAddress getLocalInetAddress() {
+    /**
+     * Get InetAddress
+     *
+     * @return The InetAddress object containing adapter information
+     */
+    public InetAddress getLocalInetAddress() {
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
                 NetworkInterface intf = en.nextElement();
@@ -31,7 +42,7 @@ public class Helpers {
             }
         } catch (SocketException ex) {
             ex.printStackTrace();
-            Log.e(TAG, "Error when looking up IP address", ex);
+            _log.error("Error when looking up IP address", ex);
         }
         return null;
     }

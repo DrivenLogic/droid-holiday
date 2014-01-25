@@ -1,8 +1,14 @@
+/**
+ * Holiday For Android - http://moorescloud.com
+ *
+ * */
 package au.com.risingedge.holiday;
 
-///
-/// POJO to hold service results.
-///
+/**
+ * a POJO to hold service results
+ *
+ * @author andrew.stone@drivenlogic.com.au
+ */
 public class ServiceResult {
 
     private String _location;
@@ -15,6 +21,11 @@ public class ServiceResult {
         return _name;
     }
 
+    /**
+     * Constructor
+     * @param _location the Holiday's web GUI URL
+     * @param _name the Holidays's hostname
+     */
     public ServiceResult(String _location, String _name) {
         this._location = _location;
         this._name = _name;

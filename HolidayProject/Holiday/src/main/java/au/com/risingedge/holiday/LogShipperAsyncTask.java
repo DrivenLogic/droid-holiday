@@ -1,7 +1,12 @@
+/**
+ * Holiday For Android - http://moorescloud.com
+ *
+ * */
 package au.com.risingedge.holiday;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,16 +17,27 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.util.Log;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ *  Reads and ships logs for remote diagnostics
+ *
+ *  @author andrew.stone@drivenlogic.com.au
+ */
 public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
-    private static final String TAG = LogShipperAsyncTask.class.getName();
+
+    private Logger _log = LoggerFactory.getLogger(LogShipperAsyncTask.class);
     private final static String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String[] LOG_MAILBOXES = new String[]{"andrew.stone@drivenlogic.com.au", "mpesce@gmail.com"};
     private Activity _activity;
-    private String exception;
 
+    /**
+     * Constructor
+     * @param activity
+     */
     LogShipperAsyncTask(Activity activity) {
-
         _activity = activity;
     }
 
@@ -37,23 +53,25 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
         stringBuilder.append(android.os.Build.VERSION.RELEASE);
         stringBuilder.append(LINE_SEPARATOR);
 
-        try {
-            String program = "logcat -d -v time";
+            File sdcard = Environment.getExternalStorageDirectory();
 
-            Process process = Runtime.getRuntime().exec(program);
+            File file = new File(sdcard,"Holiday.log");
 
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                String line;
 
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuilder.append(LINE_SEPARATOR).append(line);
+                while ((line = br.readLine()) != null) {
+                    stringBuilder.append(line);
+                    stringBuilder.append('\n');
+                }
+            }
+            catch (IOException e) {
+                _log.error(String.format("collectAndSendLog failed"), e);
             }
 
-        } catch (IOException e) {
-            Log.e(TAG, String.format("collectAndSendLog failed"), e);
-        }
 
-        Log.d(TAG, "Logs collected, log size is: " + stringBuilder.length());
+        _log.debug("Logs collected, log size is: " + stringBuilder.length());
         return stringBuilder.toString();
     }
 
@@ -73,7 +91,7 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
 
             // dirs
             File sdCard = Environment.getExternalStorageDirectory();
-            File dir = new File(sdCard.getAbsolutePath() + "/log.Holiday");
+            File dir = new File(sdCard.getAbsolutePath());
             dir.mkdirs();
 
             // file
@@ -90,22 +108,42 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
         } catch (IOException e) {
 
             e.printStackTrace();
-            Log.e(TAG, "Error writing log to SD card ", e);
+            _log.error("Error writing log to SD card ", e);
         }
     }
 
-    ///
-    /// Kick off an email intent to send the logs
-    ///
+    /**
+     * Launch an email intent.
+     * @param logText text for the body of the email
+     */
     private void SendLogViaEmail(String logText) {
 
         Intent email = new Intent(Intent.ACTION_SEND);
         email.setType("message/rfc822");
-        email.putExtra(Intent.EXTRA_EMAIL, new String[]{"andrew.stone@drivenlogic.com.au", "mpesce@gmail.com"});
+        email.putExtra(Intent.EXTRA_EMAIL, LOG_MAILBOXES);
         email.putExtra(Intent.EXTRA_SUBJECT, "Holiday Logs");
         email.putExtra(Intent.EXTRA_TEXT, logText);
 
         _activity.startActivity(Intent.createChooser(email, "Send logs..."));
+    }
+
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
+    /* Checks if external storage is available to at least read */
+    public boolean isExternalStorageReadable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state) ||
+                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            return true;
+        }
+        return false;
     }
 }
 

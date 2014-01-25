@@ -1,7 +1,13 @@
+/**
+ * Holiday For Android - http://moorescloud.com
+ *
+ * */
 package au.com.risingedge.holiday;
 
 import android.os.AsyncTask;
-import android.util.Log;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -13,33 +19,35 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
 
-///
-/// Experimental alternative scanning method.
-///
+/**
+ * Experimental alternative scanning method
+ * TODO: Discuss with Mark.
+ *
+ * @author andrew.stone@drivenlogic.com.au
+ */
 public class TcpScanTask extends AsyncTask<Void, Void, Void> {
 
-    private static final String TAG = "HolidayTcpScanTask";
+    private Logger _log = LoggerFactory.getLogger(TcpScanTask.class);
     private static final int TIMEOUT = 300;
 
     @Override
     protected Void doInBackground(Void... voids) {
 
-        String ipAddress = Helpers.getLocalInetAddress().getHostAddress();
-        String threeQuads = ipAddress.substring(0, ipAddress.lastIndexOf('.') + 1);
+        String ipAddress = new NetworkInfrastructure().getLocalInetAddress().getHostAddress();
+        String range = ipAddress.substring(0, ipAddress.lastIndexOf('.') + 1);
 
         for (int i = 1; i < 254; i++) {
             try {
                 Socket socket = new Socket();
-                SocketAddress address = new InetSocketAddress(threeQuads + i, 80);
+                SocketAddress address = new InetSocketAddress(range + i, 80);
 
                 socket.connect(address, TIMEOUT);
 
-                Log.i(TAG, "Ip: " + threeQuads + i + " seems to be open..");
+                _log.info("Ip: " + range + i + " seems to be open..");
 
                 socket.close();
 
                 try {
-
                     StringBuilder stringBuilder = new StringBuilder();
                     stringBuilder.append("{ \"lights\": [ ");
                     for (int x = 0; x < 50; x++) {
@@ -50,10 +58,10 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
                     }
                     stringBuilder.append(" ] }");
 
-                    Log.v(TAG, stringBuilder.toString());
+                    _log.info(stringBuilder.toString());
 
                     // HACK: perhaps a bit suspect... maybe there is a better part of the API to test... check that this is OK with Mark.
-                    HttpURLConnection httpConnection = (HttpURLConnection) new URL("http://" + threeQuads + i + "/iotas/0.1/device/moorescloud.holiday/localhost/setlights").openConnection();
+                    HttpURLConnection httpConnection = (HttpURLConnection) new URL("http://" + range + i + "/iotas/0.1/device/moorescloud.holiday/localhost/setlights").openConnection();
                     httpConnection.setDoOutput(true);
                     httpConnection.setRequestMethod("PUT");
                     httpConnection.addRequestProperty("Content-Type", "application/json");
@@ -63,21 +71,21 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
                     out.close();
 
                     int status = httpConnection.getResponseCode();
-                    Log.i(TAG, "Http result status: " + status);
+                    _log.info("Http result status: " + status);
                     //InputStream response = connection.getInputStream();
                 } catch (IOException e) {
                     // not a holiday!
                 }
             } catch (UnknownHostException e) {
-                //WRONG ADDRESS
+                // bad address
             } catch (SocketTimeoutException e) {
-                //TIMEOUT
+                // socket timeout
             } catch (IOException e) {
-                //CLOSED
+                // socket closed
             }
         }
 
-        Log.i(TAG, "Holiday TCP Scan Complete...");
+        _log.info("Holiday TCP Scan Complete...");
         return null;
     }
 }

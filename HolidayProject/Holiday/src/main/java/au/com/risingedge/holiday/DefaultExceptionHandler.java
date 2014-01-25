@@ -1,37 +1,39 @@
 /**
- * http://moorescloud.com - Android Holiday finder
- * author: andrew.stone@drivenlogic.com.au
- */
+ * Holiday For Android - http://moorescloud.com
+ *
+ * */
 package au.com.risingedge.holiday;
 
-import android.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-///
-/// Unhandled exceptions
-/// TODO: move to application class.
-///
+/**
+ *  Default exception handler
+ *
+ *  @author andrew.stone@drivenlogic.com.au
+ */
 public class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler
 {
-	private static final String TAG = "holidayDefaultExceptionHandler";
+    private Logger _log = LoggerFactory.getLogger(DefaultExceptionHandler.class);
 
+    /**
+     * Constructor
+     */
     public DefaultExceptionHandler()
     {
         Thread.getDefaultUncaughtExceptionHandler();
     }
 
-	public void initialize()
-	{
-		Thread.setDefaultUncaughtExceptionHandler(this);
-	}
-
+    /**
+     * Logs unhandled exception then exists with an error status.
+     */
 	@Override
 	public void uncaughtException(Thread thread, Throwable throwable)
 	{
         throwable.printStackTrace();
+        _log.error("Thread unhandled exception handler fired.",throwable);
 
-        Log.e(TAG,"Thread unhandled exception handler fired.",throwable);
-
-        // clean quit
+        // Tell the OS
         System.exit(1);
     }
 }

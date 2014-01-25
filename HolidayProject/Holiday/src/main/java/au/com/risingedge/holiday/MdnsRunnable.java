@@ -1,7 +1,14 @@
+/**
+ * Holiday For Android - http://moorescloud.com
+ *
+ * */
 package au.com.risingedge.holiday;
 
 import android.net.wifi.WifiManager;
-import android.util.Log;
+import android.os.Handler;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -9,32 +16,46 @@ import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceListener;
 
-///
-/// A Runnable for threaded scanning
-///
+/**
+ * A Runnable for threaded scanning
+ *
+ * @author andrew.stone@drivenlogic.com.au
+ */
 public class MdnsRunnable implements Runnable {
 
-    private static final String TAG = "HolidayMdnsRunnable";
+    private Logger _log = LoggerFactory.getLogger(MdnsRunnable.class);
+
+    private final static String MDNS_SERVICE_TYPE = "_iotas._tcp.local.";
 
     private WifiManager.MulticastLock _multicastLock;
-    private String _mdnsServiceType = "_iotas._tcp.local."; // _service._protocol.local.
     private JmDNS _jmdns = null;
     private ServiceListener _mdnsServicelistener;
     private WifiManager _wifiManager;
     private IMdnsCallbackListener _callbackListener;
-    private android.os.Handler _mdnsResolutionHandler;
-    private android.os.Handler _uiHandler;
+    private Handler _mdnsResolutionHandler;
+    private Handler _uiHandler;
 
-    MdnsRunnable(IMdnsCallbackListener callbackListener, WifiManager wifiManager, android.os.Handler uiHandler) {
+    /**
+     * Constructor
+     *
+     * @param callbackListener callback interface for the activity
+     * @param wifiManager      current connected WiFi manager for the device
+     * @param uiHandler        a handler created by the UI thread
+     */
+    MdnsRunnable(IMdnsCallbackListener callbackListener, WifiManager wifiManager, Handler uiHandler) {
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler()); // TODO: move to app class.
         _callbackListener = callbackListener;
         _wifiManager = wifiManager;
         _uiHandler = uiHandler;
     }
 
+    /**
+     * The runnable run method
+     */
     @Override
     public void run() {
 
+        // inform the callback that we have started
         _uiHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -44,49 +65,51 @@ public class MdnsRunnable implements Runnable {
 
         try {
 
-            String ipAddress = Helpers.getLocalInetAddress().getHostAddress();
-            Log.i(TAG, "Local IP Address is: " + ipAddress);
+            String ipAddress = new NetworkInfrastructure().getLocalInetAddress().getHostAddress();
+            _log.info("Local IP Address is: " + ipAddress);
 
-            _jmdns = JmDNS.create(Helpers.getLocalInetAddress(), ipAddress);
-            _jmdns.addServiceListener(_mdnsServiceType, _mdnsServicelistener = new ServiceListener() {
+            _jmdns = JmDNS.create(new NetworkInfrastructure().getLocalInetAddress(), ipAddress);
+            _jmdns.addServiceListener(MDNS_SERVICE_TYPE, _mdnsServicelistener = new ServiceListener() {
 
                 @Override
                 public void serviceAdded(final ServiceEvent event) {
                     try {
                         // needs to be in it's own thread to raise events on droid
                         _jmdns.requestServiceInfo(event.getType(), event.getName());
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                        Log.e(TAG, "Error requesting service info", e);
+                    } catch (Throwable ex) {
+                        ex.printStackTrace();
+                        _log.error("Error requesting service info", ex);
                     }
                 }
 
                 @Override
                 public void serviceResolved(final ServiceEvent serviceEvent) {
-                    Log.i(TAG, "Service resolved: " + serviceEvent.getInfo());
+                    _log.info("Service resolved: " + serviceEvent.getInfo());
 
-                    // TODO: add some null guards
+                    if ((serviceEvent.getInfo().getURL() != null) && (serviceEvent.getInfo().getName() != null)) {
 
-
-                    // post to the UI thread
-                    _uiHandler.post(new Runnable() {
-                        public void run() {
-                            _callbackListener.TaskCompleted(); // remove the spinner after the first result is available
-                            _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName()));
-                        }
-                    });
+                        // post to the UI thread
+                        _uiHandler.post(new Runnable() {
+                            public void run() {
+                                _callbackListener.TaskCompleted(); // remove the spinner after the first result is available
+                                _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName()));
+                            }
+                        });
+                    } else {
+                        _log.warn("serviceEvent.getInfo() did not contain the required information to locate the Holiday");
+                    }
                 }
 
                 @Override
                 public void serviceRemoved(ServiceEvent serviceEvent) {
-                    Log.i(TAG, "Service removed : " + serviceEvent.getName() + "." + serviceEvent.getType());
+                    _log.debug("Service removed: " + serviceEvent.getName() + "." + serviceEvent.getType());
                 }
 
             });
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(TAG, "Error on jmDNS setup", e);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            _log.error("Error on jmDNS setup", ex);
         }
     }
 }
