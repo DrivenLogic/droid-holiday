@@ -1,6 +1,6 @@
 /**
  * Holiday For Android - http://moorescloud.com
- *
+ * Developed by DrivenLogic.com.au
  * */
 package au.com.risingedge.holiday;
 
@@ -42,11 +42,8 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     private ProgressDialog _progressDialog;
     private WifiManager _wiFiManager;
     private Handler _uiHandler;
+    private static final int NO_RESULTS_VIEW_ID = 1024;
 
-    /**
-     * onCreate()
-     * @param savedInstanceState
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
@@ -61,50 +58,40 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
 
         _uiHandler = new Handler();
 
-        RunMdnsScan();
+        RunScan();
     }
 
     /**
      * Run the jmDNS scan
      * Scan Threads started here
      */
-    private void RunMdnsScan() {
+    private void RunScan() {
         // check that WiFi is enabled - if not warn user and open wifi intent
         _wiFiManager = (WifiManager) this.getSystemService(android.content.Context.WIFI_SERVICE);
         if (CheckWifi()) {
 
             // run multi threaded scan
-            new Thread(new MdnsRunnable(this, _wiFiManager, _uiHandler)).start();
-
-            // run synchronous scan as async task
-            //new MdnsAsyncTask(this,_wiFiManager).execute();
-
-            // run the TCP port scanner
-            //new TcpScanTask().execute();
+            new Thread(new MdnsRunnable(this, _wiFiManager, _uiHandler)).start(); // -OR- new MdnsAsyncTask(this,_wiFiManager).execute();
 
             _log.debug("Scan running");
-        }
 
-        // results check for jmdns in asynchronous mode
-        _uiHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                ResultsCheck();
-            }
-        }, 10000); // check for results after a delay
+            // results check for jmdns in asynchronous mode
+            _uiHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    ResultsCheck();
+                }
+            }, 10000); // check for results after a delay
+        }
     }
 
-    /**
-     * onStart()
-     */
+    /** onStart() */
     @Override
     protected void onStart() {
         super.onStart();
     }
 
-    /**
-     * onStop()
-     */
+    /** onStop() */
     @Override
     protected void onStop() {
         super.onStop();
@@ -122,6 +109,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
 
     /**
      * onCreateOptionsMenu()
+     *
      * @param menu
      * @return
      */
@@ -131,9 +119,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
         return true;
     }
 
-    /**
-     * onOptionsItemSelected - Menu events
-     */
+    /** onOptionsItemSelected - Menu events */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -144,7 +130,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
                 this.startActivity(i);
                 return true;
 
-           case R.id.action_sendLogs:
+            case R.id.action_sendLogs:
                 // ship logs
                 new LogShipperAsyncTask(this).execute();
                 return true;
@@ -172,7 +158,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     @Override
     public void TaskBusy(String message) {
         _progressDialog = new ProgressDialog(this);
-        _progressDialog.setMessage("Looking for Holiday...");
+        _progressDialog.setMessage(message);
         _progressDialog.show();
     }
 
@@ -186,11 +172,11 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
             //hide the dialog
             _progressDialog.dismiss();
         }
+
+        ResultsCheck();
     }
 
-    /**
-     * Restart the Activity in a way that works with devices pre API 11
-     */
+    /** Restart the Activity in a way that works with devices pre API 11 */
     private void ActivityRestart() {
         Intent intent = getIntent();
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
@@ -198,6 +184,12 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
         overridePendingTransition(0, 0);
         startActivity(intent);
         overridePendingTransition(0, 0);
+    }
+
+    /** Start a TCP scan to look for Holidays */
+    private void StartTcpScan(){
+        _log.info("Starting TCP scan...");
+        new TcpScanTask(this).execute();
     }
 
     /**
@@ -227,20 +219,6 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     }
 
     /**
-     * See if the asynchronous scan operation has yielded any results.
-     * Run on a delay
-     */
-    private void ResultsCheck() {
-        LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
-        _log.info("Results control count:" + linearLayout.getChildCount());
-
-        if (linearLayout.getChildCount() <= 0) {
-            _progressDialog.dismiss();
-            AddNotFoundControls();
-        }
-    }
-
-    /**
      * Builds an OK dialog box
      *
      * @param string text for the dialog
@@ -259,23 +237,15 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
         alert.show();
     }
 
-    /**
-     * Builds an OK dialog box
-     * Exits the application on click.
-     *
-     * @param string text for the dialog
-     */
-    private void AlertFatal(String string) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(string)
-                .setCancelable(false)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        System.exit(1); // this dialog assumes that for it to be shown it a result of a non-recoverable situation.
-                    }
-                });
-        AlertDialog alert = builder.create();
-        alert.show();
+    /** See if the asynchronous scan operation has yielded any results */
+    private void ResultsCheck() {
+        LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
+        _log.info("Results control count:" + linearLayout.getChildCount());
+
+        if (linearLayout.getChildCount() <= 0) {
+            _progressDialog.dismiss();
+            AddNoResultsControls();
+        }
     }
 
     /**
@@ -285,6 +255,8 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
      */
     private void AddHolidayControls(ServiceResult serviceResult) {
         _log.debug("Creating device button - " + serviceResult.getName());
+
+        RemoveNoResultsControls();
 
         LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
 
@@ -304,19 +276,24 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     /**
      * Add the controls needed when there were no results
      */
-    private void AddNotFoundControls() {
+    private void AddNoResultsControls() {
         _log.debug("Creating no results found controls ");
-        LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
+        final LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
+
+        // we need somewhere to stash the controls so they can be removed as a group
+        LinearLayout NoResultslinearLayout = new LinearLayout(this);
+        NoResultslinearLayout.setOrientation(LinearLayout.VERTICAL);
+        NoResultslinearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT));
+        NoResultslinearLayout.setId(NO_RESULTS_VIEW_ID); // API Level <= 17
 
         TextView textView = new TextView(this);
         textView.setText("Holiday not found");
         textView.setTypeface(Typeface.DEFAULT_BOLD);
         textView.setGravity(Gravity.CENTER);
-        linearLayout.addView(textView);
-
+        NoResultslinearLayout.addView(textView);
 
         Button button = new Button(this);
-        button.setText("Try again?");
+        button.setText("Try a deep scan?");
         button.setTypeface(Typeface.DEFAULT_BOLD);
         button.setGravity(Gravity.CENTER);
 
@@ -325,11 +302,23 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
                                           View.OnClickListener() {
                                               @Override
                                               public void onClick(View view) {
-                                                  ActivityRestart();
+                                                  linearLayout.removeAllViews();
+                                                  StartTcpScan();
                                               }
                                           });
 
-        linearLayout.addView(button);
+        NoResultslinearLayout.addView(button);
+
+        // now add to the parent
+        linearLayout.addView(NoResultslinearLayout);
+    }
+
+    /** Removes the no results view elements by ID : API Level <= 17 */
+    private void RemoveNoResultsControls() {
+        _log.debug("Removing no results found controls ");
+        final LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
+
+        linearLayout.removeView(this.findViewById(NO_RESULTS_VIEW_ID)); // remove the not found view container
     }
 }
 

@@ -18,6 +18,7 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 /**
  * Experimental alternative scanning method
@@ -28,11 +29,52 @@ import java.net.UnknownHostException;
 public class TcpScanTask extends AsyncTask<Void, Void, Void> {
 
     private Logger _log = LoggerFactory.getLogger(TcpScanTask.class);
-    private static final int TIMEOUT = 300;
+    private static final int TIMEOUT = 300; // Time to wait for the LAN
+    private IMdnsCallbackListener _callbackListener;
+    private ArrayList<ServiceResult> _serviceResults = new ArrayList<ServiceResult>();
 
+    TcpScanTask(IMdnsCallbackListener callbackListener)
+    {
+        _callbackListener = callbackListener;
+    }
+
+    /** Notify callback that we are starting work */
+    @Override
+    protected void onPreExecute() {
+        _callbackListener.TaskBusy("Running deep scan... this will take a while...");
+        super.onPreExecute();
+    }
+
+    /**
+     * Run a TCP scan for Hollidays on the current IP range.
+     * @param voids
+     * @return
+     */
     @Override
     protected Void doInBackground(Void... voids) {
+        RunTcpScan();
+        return null;
+    }
 
+    /**
+     * After the task has completed do some logging and tell the callback about it
+     */
+    @Override
+    protected void onPostExecute(Void v) {
+        super.onPostExecute(v);
+
+        for (ServiceResult serviceResult : _serviceResults) {
+            _callbackListener.ServiceLocated(serviceResult);
+        }
+
+        _callbackListener.TaskCompleted();
+    }
+
+    /**
+     * A Simple TCP port scanner
+     */
+    private void RunTcpScan()
+    {
         String ipAddress = new NetworkInfrastructure().getLocalInetAddress().getHostAddress();
         String range = ipAddress.substring(0, ipAddress.lastIndexOf('.') + 1);
 
@@ -43,7 +85,7 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
 
                 socket.connect(address, TIMEOUT);
 
-                _log.info("Ip: " + range + i + " seems to be open..");
+                _log.debug("Ip: " + range + i + " seems to be open..");
 
                 socket.close();
 
@@ -57,10 +99,9 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
                             stringBuilder.append(", ");
                     }
                     stringBuilder.append(" ] }");
+                    //_log.debug(stringBuilder.toString());
 
-                    _log.info(stringBuilder.toString());
-
-                    // HACK: perhaps a bit suspect... maybe there is a better part of the API to test... check that this is OK with Mark.
+                    // HACK: maybe there is a better part of the API to test... check that with Mark.
                     HttpURLConnection httpConnection = (HttpURLConnection) new URL("http://" + range + i + "/iotas/0.1/device/moorescloud.holiday/localhost/setlights").openConnection();
                     httpConnection.setDoOutput(true);
                     httpConnection.setRequestMethod("PUT");
@@ -71,8 +112,17 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
                     out.close();
 
                     int status = httpConnection.getResponseCode();
-                    _log.info("Http result status: " + status);
-                    //InputStream response = connection.getInputStream();
+
+                    // TODO: Check holiday response JSON
+
+                    _log.debug("Http result status: " + status);
+
+                    if(status == 200)
+                    {
+                        _log.info("Found a Holiday at:" + range + i);
+                        _serviceResults.add(new ServiceResult("http://" + range + i,"Holiday @ " + range + i)); // hostname resolution probably not reliable
+                    }
+
                 } catch (IOException e) {
                     // not a holiday!
                 }
@@ -84,8 +134,6 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
                 // socket closed
             }
         }
-
         _log.info("Holiday TCP Scan Complete...");
-        return null;
     }
 }

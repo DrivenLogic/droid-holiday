@@ -1,6 +1,6 @@
 /**
  * Holiday For Android - http://moorescloud.com
- *
+ * Developed by DrivenLogic.com.au
  * */
 package au.com.risingedge.holiday;
 
@@ -19,4 +19,5 @@ public interface IMdnsCallbackListener {
 
     /** done looking */
     void TaskCompleted();
+
 }

@@ -1,6 +1,6 @@
 /**
  * Holiday For Android - http://moorescloud.com
- *
+ * Developed by DrivenLogic.com.au
  * */
 package au.com.risingedge.holiday;
 
@@ -27,9 +27,7 @@ import javax.jmdns.ServiceInfo;
 public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
 
     private Logger _log = LoggerFactory.getLogger(MdnsAsyncTask.class);
-
     private final static String MDNS_SERVICE_TYPE = "_iotas._tcp.local.";
-
     private WifiManager.MulticastLock _multicastLock;
     private JmDNS _jmdns;
     private ServiceInfo[] _locatedMdnsServices;
@@ -48,9 +46,7 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
         _wifiManager = wifiManager;
     }
 
-    /**
-     * Notify callback that we are starting work
-     */
+    /** Notify callback that we are starting work */
     @Override
     protected void onPreExecute() {
         _callbackListener.TaskBusy("Looking for Holiday...");

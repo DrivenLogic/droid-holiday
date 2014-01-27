@@ -1,6 +1,6 @@
 /**
  * Holiday For Android - http://moorescloud.com
- *
+ * Developed by DrivenLogic.com.au
  * */
 package au.com.risingedge.holiday;
 
@@ -30,9 +30,7 @@ public class HolidayClickListener implements View.OnClickListener
         _activity = activity;
     }
 
-    /**
-     *  OnClick Open a web intent in the default browser
-     */
+    /** OnClick Open a web intent in the default browser */
     @Override
     public void onClick(View view)
     {

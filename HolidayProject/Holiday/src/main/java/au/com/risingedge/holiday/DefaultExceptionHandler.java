@@ -1,6 +1,6 @@
 /**
  * Holiday For Android - http://moorescloud.com
- *
+ * Developed by DrivenLogic.com.au
  * */
 package au.com.risingedge.holiday;
 
@@ -16,24 +16,21 @@ public class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler
 {
     private Logger _log = LoggerFactory.getLogger(DefaultExceptionHandler.class);
 
-    /**
-     * Constructor
-     */
+    /** Constructor */
     public DefaultExceptionHandler()
     {
         Thread.getDefaultUncaughtExceptionHandler();
     }
 
-    /**
-     * Logs unhandled exception then exists with an error status.
-     */
+    /** Logs unhandled exception then exists with an error status */
 	@Override
 	public void uncaughtException(Thread thread, Throwable throwable)
 	{
         throwable.printStackTrace();
-        _log.error("Thread unhandled exception handler fired.",throwable);
+        _log.error("Thread unhandled exception handler fired! ",throwable);
 
-        // Tell the OS
+        //TODO: prompt user to send logs?
+
         System.exit(1);
     }
 }

@@ -1,21 +1,20 @@
 /**
  * Holiday For Android - http://moorescloud.com
- *
+ * Developed by DrivenLogic.com.au
  * */
 package au.com.risingedge.holiday;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Environment;
 
 import org.slf4j.Logger;
@@ -30,85 +29,66 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
 
     private Logger _log = LoggerFactory.getLogger(LogShipperAsyncTask.class);
     private final static String LINE_SEPARATOR = System.getProperty("line.separator");
-    private static final String[] LOG_MAILBOXES = new String[]{"andrew.stone@drivenlogic.com.au", "mpesce@gmail.com"};
-    private Activity _activity;
+    private static final String[] SEND_TO_MAILBOXES = new String[]{"andrew.stone@drivenlogic.com.au", "mpesce@gmail.com"};
+    private final static String LOG_FILENAME = "Holiday.log";
+    private Context _context;
+    private String _reportTitle = "";
 
     /**
      * Constructor
      * @param activity
      */
     LogShipperAsyncTask(Activity activity) {
-        _activity = activity;
+        _context = activity;
     }
 
+    /**
+     * Read logs from external storage and get environmental information.
+     * @param voids
+     * @return
+     */
     @Override
     protected String doInBackground(Void... voids) {
 
         StringBuilder stringBuilder = new StringBuilder().append(LINE_SEPARATOR);
 
-        stringBuilder.append("PHONE: ");
-        stringBuilder.append(android.os.Build.MODEL);
-        stringBuilder.append(LINE_SEPARATOR);
-        stringBuilder.append("DROID VERSION: ");
-        stringBuilder.append(android.os.Build.VERSION.RELEASE);
-        stringBuilder.append(LINE_SEPARATOR);
+        GetEnvrionmentDetails(stringBuilder);
+        ReadSdLog(stringBuilder);
 
-            File sdcard = Environment.getExternalStorageDirectory();
-
-            File file = new File(sdcard,"Holiday.log");
-
-            try {
-                BufferedReader br = new BufferedReader(new FileReader(file));
-                String line;
-
-                while ((line = br.readLine()) != null) {
-                    stringBuilder.append(line);
-                    stringBuilder.append('\n');
-                }
-            }
-            catch (IOException e) {
-                _log.error(String.format("collectAndSendLog failed"), e);
-            }
-
-
-        _log.debug("Logs collected, log size is: " + stringBuilder.length());
+        _log.debug("Logs collected, log length is: " + stringBuilder.length());
         return stringBuilder.toString();
     }
 
+    /**
+     * Send log via email intent
+     * @param result
+     */
     @Override
     protected void onPostExecute(String result) {
-        SaveLogToSD(result);
         SendLogViaEmail(result);
     }
 
-    ///
-    /// Save the log to the SD card
-    ///
-    private void SaveLogToSD(String logText) {
+    /**
+     * Read our log from the users SD card
+     * @param stringBuilder
+     * @return
+     */
+    private void ReadSdLog(StringBuilder stringBuilder)
+    {
+        File sdcard = Environment.getExternalStorageDirectory();
+        File file = new File(sdcard,LOG_FILENAME);
+
         try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
 
-            // write out to SD
-
-            // dirs
-            File sdCard = Environment.getExternalStorageDirectory();
-            File dir = new File(sdCard.getAbsolutePath());
-            dir.mkdirs();
-
-            // file
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd.HHmm.ss");
-            Date now = new Date();
-            String fileName = formatter.format(now) + ".log";
-            File file = new File(dir, "holiday." + fileName);
-
-            // write
-            FileWriter writer = new FileWriter(file);// Writes the content to the file
-            writer.write(logText);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-
-            e.printStackTrace();
-            _log.error("Error writing log to SD card ", e);
+            while ((line = br.readLine()) != null) {
+                stringBuilder.append(line);
+                stringBuilder.append('\n');
+            }
+        }
+        catch (IOException e) {
+            _log.error(String.format("collectAndSendLog failed"), e);
         }
     }
 
@@ -120,11 +100,62 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
 
         Intent email = new Intent(Intent.ACTION_SEND);
         email.setType("message/rfc822");
-        email.putExtra(Intent.EXTRA_EMAIL, LOG_MAILBOXES);
-        email.putExtra(Intent.EXTRA_SUBJECT, "Holiday Logs");
+        email.putExtra(Intent.EXTRA_EMAIL, SEND_TO_MAILBOXES);
+        email.putExtra(Intent.EXTRA_SUBJECT, "Holiday Logs " + _reportTitle);
         email.putExtra(Intent.EXTRA_TEXT, logText);
 
-        _activity.startActivity(Intent.createChooser(email, "Send logs..."));
+        _context.startActivity(Intent.createChooser(email, "Send logs..."));
+    }
+
+    /**
+     * Get as many details about the environment as possible
+     * @param stringBuilder a string builder containing our crash report
+     */
+    public void GetEnvrionmentDetails(StringBuilder stringBuilder) {
+        try {
+
+            // Report Title
+            _reportTitle = android.os.Build.MODEL + " " + android.os.Build.VERSION.RELEASE;
+
+            // Basics
+            stringBuilder.append("MODEL: ");
+            stringBuilder.append(Build.MODEL);
+            stringBuilder.append(LINE_SEPARATOR);
+
+            stringBuilder.append("HARDWARE: ");
+            stringBuilder.append(Build.HARDWARE);
+            stringBuilder.append(LINE_SEPARATOR);
+
+            stringBuilder.append("ANDROID VERSION: ");
+            stringBuilder.append(Build.VERSION.RELEASE);
+            stringBuilder.append(LINE_SEPARATOR);
+
+            stringBuilder.append("KERNEL VERSION: ");
+            stringBuilder.append(System.getProperty("os.version"));
+            stringBuilder.append(LINE_SEPARATOR);
+
+            // Get information from package manager
+            final PackageManagerWrapper packageManagerWrapper = new PackageManagerWrapper(_context);
+            final PackageInfo packageInfo = packageManagerWrapper.getPackageInfo();
+
+            if (packageInfo != null) {
+
+                stringBuilder.append("Package Version code ");
+                stringBuilder.append(Integer.toString(packageInfo.versionCode));
+                stringBuilder.append(LINE_SEPARATOR);
+
+                stringBuilder.append("Package Version name ");
+                stringBuilder.append(packageInfo.versionName != null ? packageInfo.versionName : "not set");
+                stringBuilder.append(LINE_SEPARATOR);
+            }
+
+            stringBuilder.append("--------------------");
+            stringBuilder.append(LINE_SEPARATOR);
+            stringBuilder.append(LINE_SEPARATOR);
+
+        } catch (RuntimeException ex) {
+            _log.error("Error while retrieving environmental data", ex);
+        }
     }
 
     /* Checks if external storage is available for read and write */
@@ -146,5 +177,7 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
         return false;
     }
 }
+
+
 
 
