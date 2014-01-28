@@ -1,13 +1,19 @@
 
 Tested Devices
 ===================================================
-./adb -d shell getprop | grep product
+== ./adb -d shell getprop | grep product
 
 PASS:
 ---------------------------------------------------
-Samsung GT-l9305T 	(Android 4.1.2 - API 16)
+Samsung GT-I9305T 	(Android 4.1.2 - API 16)
 Huawei Vodafone 858 	(Android 2.2.2 - API)
 Huawei U8180		(Android 2.2.2 - API)
+Samsung GT-I9100	(Android 4.0.3 - API 15)
 
 ---------------------------------------------------
-FAIL:
+TCP Scan only:
+
+
+
+
+
