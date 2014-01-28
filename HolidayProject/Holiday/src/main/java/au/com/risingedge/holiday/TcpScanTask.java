@@ -41,7 +41,7 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
     /** Notify callback that we are starting work */
     @Override
     protected void onPreExecute() {
-        _callbackListener.TaskBusy("Running deep scan... this will take a while...");
+        _callbackListener.TaskBusy("Running deep scan... this will take awhile...");
         super.onPreExecute();
     }
 

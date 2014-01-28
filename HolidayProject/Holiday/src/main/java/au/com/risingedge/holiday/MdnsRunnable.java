@@ -47,6 +47,7 @@ public class MdnsRunnable implements Runnable {
         _callbackListener = callbackListener;
         _wifiManager = wifiManager;
         _uiHandler = uiHandler;
+        _mdnsResolutionHandler = new Handler();
     }
 
     /**
@@ -74,8 +75,15 @@ public class MdnsRunnable implements Runnable {
                 @Override
                 public void serviceAdded(final ServiceEvent event) {
                     try {
-                        // needs to be in it's own thread to raise events on droid
-                        _jmdns.requestServiceInfo(event.getType(), event.getName());
+                        _log.info("Service added Called - Requesting service info");
+
+                        _mdnsResolutionHandler.post(new Runnable() {
+                            public void run() {
+                                // needs to be in it's own thread to raise events on droid
+                                _jmdns.requestServiceInfo(event.getType(), event.getName());
+                            }
+                        });
+
                     } catch (Throwable ex) {
                         ex.printStackTrace();
                         _log.error("Error requesting service info", ex);
