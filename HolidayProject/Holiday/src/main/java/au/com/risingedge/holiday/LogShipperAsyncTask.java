@@ -52,7 +52,7 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
 
         StringBuilder stringBuilder = new StringBuilder().append(LINE_SEPARATOR);
 
-        GetEnvrionmentDetails(stringBuilder);
+        GetEnvironmentDetails(stringBuilder);
         ReadSdLog(stringBuilder);
 
         _log.debug("Logs collected, log length is: " + stringBuilder.length());
@@ -111,7 +111,7 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
      * Get as many details about the environment as possible
      * @param stringBuilder a string builder containing our crash report
      */
-    public void GetEnvrionmentDetails(StringBuilder stringBuilder) {
+    public void GetEnvironmentDetails(StringBuilder stringBuilder) {
         try {
 
             // Report Title

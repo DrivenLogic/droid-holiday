@@ -71,6 +71,22 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
     }
 
     /**
+     * Make sure this device is on a private range
+     *
+     *  10.0.0.0 - 10.255.255.255
+     *  172.16.0.0 - 172.31.255.255
+     *  192.168.0.0 - 192.168.255.255
+     *
+     * @return
+     */
+    private boolean isPrivateIpRange(String string)
+    {
+        // Check range
+
+        return  true;
+    }
+
+    /**
      * A Simple TCP port scanner
      */
     private void RunTcpScan()

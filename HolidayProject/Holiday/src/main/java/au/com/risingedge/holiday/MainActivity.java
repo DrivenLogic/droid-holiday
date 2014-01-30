@@ -41,6 +41,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     private Logger _log = LoggerFactory.getLogger(MainActivity.class);
     private ProgressDialog _progressDialog;
     private WifiManager _wiFiManager;
+    private WifiManager.MulticastLock _multicastLock;
     private Handler _uiHandler;
     private static final int NO_RESULTS_VIEW_ID = 1024;
 
@@ -68,10 +69,14 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     private void RunScan() {
         // check that WiFi is enabled - if not warn user and open wifi intent
         _wiFiManager = (WifiManager) this.getSystemService(android.content.Context.WIFI_SERVICE);
+
         if (CheckWifi()) {
 
-            // run multi threaded scan
-            new Thread(new MdnsRunnable(this, _wiFiManager, _uiHandler)).start(); // -OR- new MdnsAsyncTask(this,_wiFiManager).execute();
+            // take a multicast lock
+            _multicastLock = _wiFiManager.createMulticastLock("lockString");
+            _multicastLock.acquire();
+
+            new Thread(new MdnsRunnable(this, _wiFiManager, _uiHandler)).start();
 
             _log.debug("Scan running");
 
@@ -81,7 +86,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
                 public void run() {
                     ResultsCheck();
                 }
-            }, 10000); // check for results after a delay
+            }, 12000); // check for results after a delay
         }
     }
 
@@ -95,6 +100,10 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     @Override
     protected void onStop() {
         super.onStop();
+        if((_multicastLock!=null)&&(_multicastLock.isHeld()))
+        {
+            _multicastLock.release();
+        }
     }
 
     /**
@@ -104,7 +113,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     @Override
     protected void onResume() {
         super.onResume();
-        CheckWifi(); // make sure its on when they come back
+        CheckWifi();
     }
 
     /**
@@ -172,8 +181,6 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
             //hide the dialog
             _progressDialog.dismiss();
         }
-
-        ResultsCheck();
     }
 
     /** Restart the Activity in a way that works with devices pre API 11 */
@@ -189,6 +196,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     /** Start a TCP scan to look for Holidays */
     private void StartTcpScan(){
         _log.info("Starting TCP scan...");
+        RemoveNoResultsControls();
         new TcpScanTask(this).execute();
     }
 
@@ -219,7 +227,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     }
 
     /**
-     * Builds an OK dialog box
+     * Wifi Alert Box
      *
      * @param string text for the dialog
      */
@@ -231,6 +239,24 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
                     public void onClick(DialogInterface dialog, int id) {
                         // open WiFi settings
                         startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    /**
+     * TCP Scan Alert Box
+     *
+     * @param string text for the dialog
+     */
+    private void TcpScanWarningBox() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.tcp_scan_warning)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        StartTcpScan();
                     }
                 });
         AlertDialog alert = builder.create();
@@ -256,13 +282,12 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     private void AddHolidayControls(ServiceResult serviceResult) {
         _log.debug("Creating device button - " + serviceResult.getName());
 
-        RemoveNoResultsControls();
-
         LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
 
         ImageView imageView = new ImageView(this);
         imageView.setOnClickListener(new HolidayClickListener(serviceResult.getIp(), this));
         imageView.setImageResource(R.drawable.device);
+        imageView.setScaleType(ImageView.ScaleType.CENTER);
         linearLayout.addView(imageView);
 
         TextView textView = new TextView(this);
@@ -303,7 +328,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
                                               @Override
                                               public void onClick(View view) {
                                                   linearLayout.removeAllViews();
-                                                  StartTcpScan();
+                                                  TcpScanWarningBox();
                                               }
                                           });
 
@@ -316,9 +341,10 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     /** Removes the no results view elements by ID : API Level <= 17 */
     private void RemoveNoResultsControls() {
         _log.debug("Removing no results found controls ");
-        final LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
 
+        LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
         linearLayout.removeView(this.findViewById(NO_RESULTS_VIEW_ID)); // remove the not found view container
+        linearLayout.invalidate();
     }
 }
 
