@@ -14,6 +14,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
@@ -44,6 +45,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     private WifiManager.MulticastLock _multicastLock;
     private Handler _uiHandler;
     private static final int NO_RESULTS_VIEW_ID = 1024;
+    private static final String HELP_URL = "http://support.moorescloud.com/help/android/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +65,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
     }
 
     /**
-     * Run the jmDNS scan
+     * Run the mdns scan
      * Scan Threads started here
      */
     private void RunScan() {
@@ -72,15 +74,31 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
 
         if (CheckWifi()) {
 
-            // take a multicast lock
-            _multicastLock = _wiFiManager.createMulticastLock("lockString");
-            _multicastLock.acquire();
+            _log.info("Device SDK level: " + Build.VERSION.SDK_INT);
 
-            new Thread(new MdnsRunnable(this, _wiFiManager, _uiHandler)).start();
+            if(Build.VERSION.SDK_INT>=16) // 4.1 Jellybean and above
+            {
+                _log.info("Starting NDS Scan...");
+                // run scan using Androids flavor of mdns aka 'NSD'
+                new Thread(new NsdRunnable(this,this,_uiHandler)).start();
+            }
+            else if(isBetween(Build.VERSION.SDK_INT,7,15)) // 2.1 Eclair to 4.0.3 IceCream Sandwich
+            {
+                // take a multicast lock
+                _multicastLock = _wiFiManager.createMulticastLock("lockString");
+                _multicastLock.acquire();
 
-            _log.debug("Scan running");
+                _log.debug("Starting jMDNS scan...");
+                // Run scan using jmdns
+                new Thread(new MdnsRunnable(this, _wiFiManager, _uiHandler)).start();
+            }
+            else
+            {
+                _log.warn(Build.VERSION.SDK_INT + " is not supported. Can't start scan");
+            }
 
-            // results check for jmdns in asynchronous mode
+            // Since the scans are an async and never ending...
+            // we ned to decide on when to have a look for results.
             _uiHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -135,7 +153,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
             case R.id.action_help:
                 // Holiday help URL
                 Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse("http://support.moorescloud.com/help/android/"));
+                i.setData(Uri.parse(HELP_URL));
                 this.startActivity(i);
                 return true;
 
@@ -345,6 +363,10 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
         LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
         linearLayout.removeView(this.findViewById(NO_RESULTS_VIEW_ID)); // remove the not found view container
         linearLayout.invalidate();
+    }
+
+    public static boolean isBetween(int x, int lower, int upper) {
+        return lower <= x && x <= upper;
     }
 }
 

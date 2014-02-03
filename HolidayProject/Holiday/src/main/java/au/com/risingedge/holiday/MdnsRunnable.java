@@ -25,7 +25,7 @@ public class MdnsRunnable implements Runnable {
 
     private Logger _log = LoggerFactory.getLogger(MdnsRunnable.class);
 
-    private final static String MDNS_SERVICE_TYPE = "_iotas._tcp.local.";
+    private final static String MDNS_SERVICE_TYPE = "_iotas._tcp.local."; //_<protocol>._<transportlayer>
 
     private WifiManager.MulticastLock _multicastLock;
     private JmDNS _jmdns = null;
