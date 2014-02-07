@@ -139,10 +139,15 @@ public class MainActivity extends Activity implements IScanCallbackListener {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+
+            case R.id.action_rescan:
+                ActivityRestart();
+                return true;
+
             case R.id.action_help:
                 // Holiday help URL
                 Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse("http://support.moorescloud.com/help/android/"));
+                i.setData(Uri.parse(getResources().getString(R.string.tcp_scan_warning)));
                 this.startActivity(i);
                 return true;
 
@@ -198,6 +203,7 @@ public class MainActivity extends Activity implements IScanCallbackListener {
 
     /** Restart the Activity in a way that works with devices pre API 11 */
     private void ActivityRestart() {
+        _serviceResults.clear();
         Intent intent = getIntent();
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         finish();
