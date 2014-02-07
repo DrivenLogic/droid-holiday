@@ -13,21 +13,26 @@ public class ServiceResult {
 
     private String _location;
     private String _name;
+    private ScanType _scanType;
 
-    public String getIp() {
-        return _location;
-    }
+    public String get_location() { return _location; }
     public String getName() {
         return _name;
     }
+    public ScanType getScanType() { return _scanType; }
 
     /**
      * Constructor
      * @param _location the Holiday's web GUI URL
      * @param _name the Holidays's hostname
      */
-    public ServiceResult(String _location, String _name) {
-        this._location = _location;
-        this._name = _name;
+    public ServiceResult(String location, String name, ScanType scanType) {
+        _location = location;
+        _name = name;
+        _scanType = scanType;
+    }
+
+    public enum ScanType {
+        TCP_SCAN, JMDMS
     }
 }

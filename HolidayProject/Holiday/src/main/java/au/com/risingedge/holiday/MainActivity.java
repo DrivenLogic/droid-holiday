@@ -226,7 +226,7 @@ public class MainActivity extends Activity implements IScanCallbackListener {
         try {
             if (!wifi.isConnected()) {
                 _log.info("WiFi is off! - Can't scan - user needs to enable WiFi - promoting user");
-                WifiAlert("Please enable WiFi and connect to same network as your Holiday");
+                ShowDialogWifiAlert("Please enable WiFi and connect to same network as your Holiday");
                 return false;
             } else {
                 return true;
@@ -234,7 +234,7 @@ public class MainActivity extends Activity implements IScanCallbackListener {
         } catch (Throwable ex) {
             ex.printStackTrace();
             _log.error("Error getting Wifi State");
-            WifiAlert("Please enable WiFi and connect to same network as your Holiday");
+            ShowDialogWifiAlert("Please enable WiFi and connect to same network as your Holiday");
             return false;
         }
     }
@@ -244,10 +244,10 @@ public class MainActivity extends Activity implements IScanCallbackListener {
      *
      * @param string text for the dialog
      */
-    private void WifiAlert(String string) {
+    private void ShowDialogWifiAlert(String string) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(string)
-                .setCancelable(false)
+                .setCancelable(true)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // open WiFi settings
@@ -263,7 +263,7 @@ public class MainActivity extends Activity implements IScanCallbackListener {
      *
      * @param string text for the dialog
      */
-    private void TcpScanWarningBox() {
+    private void ShowDialogTcpScanWarning() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.tcp_scan_warning)
                 .setCancelable(false)
@@ -273,7 +273,6 @@ public class MainActivity extends Activity implements IScanCallbackListener {
                     }
                 });
         AlertDialog alert = builder.create();
-        alert.show();
         alert.show();
     }
 
@@ -309,13 +308,13 @@ public class MainActivity extends Activity implements IScanCallbackListener {
         for(ServiceResult serviceResult : _serviceResults)
         {
             ImageView imageView = new ImageView(this);
-            imageView.setOnClickListener(new HolidayClickListener(serviceResult.getIp(), this));
             imageView.setImageResource(R.drawable.device);
             imageView.setScaleType(ImageView.ScaleType.CENTER);
+            imageView.setOnClickListener(new HolidayClickListener(serviceResult.get_location(), this,serviceResult.getScanType()));
             linearLayout.addView(imageView);
 
             TextView textView = new TextView(this);
-            textView.setOnClickListener(new HolidayClickListener(serviceResult.getIp(), this));
+            textView.setOnClickListener(new HolidayClickListener(serviceResult.get_location(), this,serviceResult.getScanType()));
             textView.setText(serviceResult.getName());
             textView.setTypeface(Typeface.DEFAULT_BOLD);
             textView.setGravity(Gravity.CENTER);
@@ -347,13 +346,13 @@ public class MainActivity extends Activity implements IScanCallbackListener {
         button.setTypeface(Typeface.DEFAULT_BOLD);
         button.setGravity(Gravity.CENTER);
 
-        // let the user rescan
+        // let the user run a TCP Scan
         button.setOnClickListener(new
                                           View.OnClickListener() {
                                               @Override
                                               public void onClick(View view) {
                                                   linearLayout.removeAllViews();
-                                                  TcpScanWarningBox();
+                                                  ShowDialogTcpScanWarning();
                                               }
                                           });
 

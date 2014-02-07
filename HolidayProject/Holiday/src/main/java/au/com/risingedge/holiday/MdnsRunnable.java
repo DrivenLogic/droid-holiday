@@ -99,7 +99,7 @@ public class MdnsRunnable implements Runnable {
                         // post to the UI thread
                         _uiHandler.post(new Runnable() {
                             public void run() {
-                                _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName()));
+                                _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
                                 _callbackListener.ScanCompleted(); // remove the spinner after the first result is available
                             }
                         });

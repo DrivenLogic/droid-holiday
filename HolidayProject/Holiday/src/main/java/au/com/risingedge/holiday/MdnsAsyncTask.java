@@ -97,7 +97,7 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
             _log.info("Adding controls to UI ");
 
             for (ServiceInfo serviceInfo : _locatedMdnsServices) {
-                _callbackListener.ServiceLocated(new ServiceResult(serviceInfo.getURL(),serviceInfo.getName()));
+                _callbackListener.ServiceLocated(new ServiceResult(serviceInfo.getURL(),serviceInfo.getName(), ServiceResult.ScanType.JMDMS));
             }
         }
         _callbackListener.ScanCompleted();

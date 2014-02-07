@@ -5,4 +5,5 @@
     <string name="action_help">Help</string>
     <string name="action_sendLogs">Send log</string>
     <string name="tcp_scan_warning">Caution! Scanning your network for Holidays could be interpreted as an attack. If this is not your home network, you should ask permission before you perform this scan</string>
+    <string name="tcp_result_warning">Please bookmark this Holiday in your browser</string>
 </resources>
