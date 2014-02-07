@@ -20,12 +20,24 @@ android {
         minSdkVersion 7
         targetSdkVersion 8
     }
+
+    signingConfigs {
+        release {
+            storeFile file("release.keystore")
+            storePassword "******"
+            keyAlias "******"
+            keyPassword "******"
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
 }
 
 dependencies {
     compile files('lib/jmdns-3.4.1.jar')
     compile files('lib/slf4j-api-1.7.5.jar')
     compile files('lib/logback-android-1.0.10-2.jar')
-    //compile 'javax.jmdns:jmdns:3.4.1'
-    //compile 'com.github.rickyclarkson:jmdns:3.4.2-r353-1'
 }

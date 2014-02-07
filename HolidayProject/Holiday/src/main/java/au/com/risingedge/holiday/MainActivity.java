@@ -290,10 +290,6 @@ public class MainActivity extends Activity implements IScanCallbackListener {
             _progressDialog.dismiss();
             AddNoResultsControls();
         }
-        else
-        {
-            // TODO: Add Rescan Button
-        }
     }
 
     /**

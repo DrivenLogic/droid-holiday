@@ -90,12 +90,8 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
 
             String range = ipAddress.substring(0, ipAddress.lastIndexOf('.') + 1);
 
-            // TODO: could do with some more threading perhaps.
-
             for (int i = 1; i < 255; i++) {
                 try {
-
-                    //_log.debug(String.valueOf(i));
 
                     // See if port is open - if it's not, an exception will bubble
                     probeTcpPort(range + i, 80);
@@ -158,20 +154,25 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
         HttpGet httpGet = new HttpGet("http://" + ip + "/iotas");
         httpResponse = httpClient.execute(httpGet);
 
-        httpEntity = httpResponse.getEntity();
-        String jsonResult = EntityUtils.toString(httpEntity);
+        int httpStatus = httpResponse.getStatusLine().getStatusCode();
 
-        if(jsonResult!=null)
+        if(httpStatus == 200)
         {
-            _log.debug("json result: " + jsonResult);
+            httpEntity = httpResponse.getEntity();
+            String jsonResult = EntityUtils.toString(httpEntity);
 
-            JSONObject jsonObject = new JSONObject(jsonResult);
+            if(jsonResult!=null)
+            {
+                _log.debug("json result: " + jsonResult);
 
-            String hostName = jsonObject.getString("host_name");
-            String apiVersion = jsonObject.getString("version");
+                JSONObject jsonObject = new JSONObject(jsonResult);
 
-            _log.debug("Found Holiday " +hostName+ " with IOTAS API version: " + apiVersion);
-            _serviceResults.add(new ServiceResult("http://" + ip, hostName, ServiceResult.ScanType.TCP_SCAN));
+                String hostName = jsonObject.getString("host_name");
+                String apiVersion = jsonObject.getString("version");
+
+                _log.debug("Found Holiday " +hostName+ " with IOTAS API version: " + apiVersion);
+                _serviceResults.add(new ServiceResult("http://" + ip, hostName, ServiceResult.ScanType.TCP_SCAN));
+            }
         }
 
         // let exceptions bubble
