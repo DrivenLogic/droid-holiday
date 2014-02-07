@@ -1,11 +1,11 @@
 
 Tested Devices
-===================================================
+==================================================================
 == ./adb -d shell getprop | grep product
 
 
 PASS:
----------------------------------------------------
+---------------------------------------------------------------
 Samsung S3 GT-I9305T 	(Android 4.1.2 - API 16)
 Huawei Vodafone 858 	(Android 2.2.2 - API 8)
 Huawei U8180		(Android 2.2.2 - API 8)
@@ -13,12 +13,13 @@ Samsung GT-I9100	(Android 4.0.3 - API 15)
 Pendo PNDPP41DG7SLV	(Android 4.0.4 - API 15)
 Kindle Fire (blaze)	(Android 2.3.4 - API 10)
 Samsung Galaxy Nexus  	(Android 4.1.2 - API 16)
-Nexus 5			(Android 4.4.2 - API 19)		
+Nexus 5			(Android 4.4.2 - API 19)
+Samsung S4 GT-I9505	(Android 4.4.2 - API 18)	
 
 
 TCP Scan only:
----------------------------------------------------
-Samsung Galaxy S4 ?
+---------------------------------------------------------------
+Samsung GT-S5660	(Android 4.2.2 - API 17) Cyanogen 10.1
 
 
 

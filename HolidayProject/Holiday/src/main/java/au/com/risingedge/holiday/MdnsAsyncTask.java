@@ -65,7 +65,7 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
                 _multicastLock = _wifiManager.createMulticastLock("lockString");
                 _multicastLock.acquire();
 
-                _log.info("MultiCast Lock State: " + _multicastLock.isHeld()); // This is still 'true' when disabled in firmware >:/
+                //_log.info("MultiCast Lock State: " + _multicastLock.isHeld()); // This is still 'true' when disabled in firmware >:/
 
                 String ipAddress = new NetworkInfrastructure().getLocalInetAddress().getHostAddress();
                 _log.info("Local IP Address is: " + ipAddress);

@@ -151,10 +151,10 @@ public class MainActivity extends Activity implements IScanCallbackListener {
                 this.startActivity(i);
                 return true;
 
-            case R.id.action_sendLogs:
-                // ship logs
-                new LogShipperAsyncTask(this).execute();
-                return true;
+//            case R.id.action_sendLogs:
+//                // ship logs
+//                new LogShipperAsyncTask(this).execute();
+//                return true;
         }
         return super.onOptionsItemSelected(item);
     }
