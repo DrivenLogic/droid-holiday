@@ -31,7 +31,7 @@ public class MdnsRunnable implements Runnable {
     private JmDNS _jmdns = null;
     private ServiceListener _mdnsServicelistener;
     private WifiManager _wifiManager;
-    private IMdnsCallbackListener _callbackListener;
+    private IScanCallbackListener _callbackListener;
     private Handler _mdnsResolutionHandler;
     private Handler _uiHandler;
 
@@ -42,7 +42,7 @@ public class MdnsRunnable implements Runnable {
      * @param wifiManager      current connected WiFi manager for the device
      * @param uiHandler        a handler created by the UI thread
      */
-    MdnsRunnable(IMdnsCallbackListener callbackListener, WifiManager wifiManager, Handler uiHandler) {
+    MdnsRunnable(IScanCallbackListener callbackListener, WifiManager wifiManager, Handler uiHandler) {
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler()); // TODO: move to app class.
         _callbackListener = callbackListener;
         _wifiManager = wifiManager;
@@ -60,7 +60,7 @@ public class MdnsRunnable implements Runnable {
         _uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                _callbackListener.TaskBusy("looking for Holiday...");
+                _callbackListener.ScanStarted("looking for Holiday...");
             }
         });
 
@@ -99,8 +99,8 @@ public class MdnsRunnable implements Runnable {
                         // post to the UI thread
                         _uiHandler.post(new Runnable() {
                             public void run() {
-                                _callbackListener.TaskCompleted(); // remove the spinner after the first result is available
                                 _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName()));
+                                _callbackListener.ScanCompleted(); // remove the spinner after the first result is available
                             }
                         });
                     } else {

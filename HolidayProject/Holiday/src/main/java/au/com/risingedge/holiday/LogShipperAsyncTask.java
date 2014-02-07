@@ -134,6 +134,10 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
             stringBuilder.append(System.getProperty("os.version"));
             stringBuilder.append(LINE_SEPARATOR);
 
+            stringBuilder.append("ROM BUILD ID: ");
+            stringBuilder.append(Build.DISPLAY);
+            stringBuilder.append(LINE_SEPARATOR);
+
             // Get information from package manager
             final PackageManagerWrapper packageManagerWrapper = new PackageManagerWrapper(_context);
             final PackageInfo packageInfo = packageManagerWrapper.getPackageInfo();

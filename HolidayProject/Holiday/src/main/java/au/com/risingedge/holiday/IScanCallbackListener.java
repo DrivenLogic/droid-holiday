@@ -9,15 +9,15 @@ package au.com.risingedge.holiday;
  *
  *  @author andrew.stone@drivenlogic.com.au
  */
-public interface IMdnsCallbackListener {
+public interface IScanCallbackListener {
 
     /** Found a Service */
     void ServiceLocated(ServiceResult serviceResult);
 
     /** Task is looking for services */
-    void TaskBusy(String message);
+    void ScanStarted(String message);
 
     /** done looking */
-    void TaskCompleted();
+    void ScanCompleted();
 
 }

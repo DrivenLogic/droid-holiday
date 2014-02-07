@@ -29,8 +29,6 @@ public class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler
         throwable.printStackTrace();
         _log.error("Thread unhandled exception handler fired! ",throwable);
 
-        //TODO: prompt user to send logs?
-
         System.exit(1);
     }
 }

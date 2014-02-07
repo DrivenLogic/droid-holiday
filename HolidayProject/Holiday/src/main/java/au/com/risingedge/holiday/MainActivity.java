@@ -31,18 +31,21 @@ import android.widget.TextView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+
 /**
  * An Activity where scanning tasks are started and results are displayed
  *
  * @author andrew.stone@drivenlogic.com.au
  */
-public class MainActivity extends Activity implements IMdnsCallbackListener {
+public class MainActivity extends Activity implements IScanCallbackListener {
 
     private Logger _log = LoggerFactory.getLogger(MainActivity.class);
     private ProgressDialog _progressDialog;
     private WifiManager _wiFiManager;
     private WifiManager.MulticastLock _multicastLock;
     private Handler _uiHandler;
+    private ArrayList<ServiceResult> _serviceResults = new ArrayList<ServiceResult>();
     private static final int NO_RESULTS_VIEW_ID = 1024;
 
     @Override
@@ -54,6 +57,8 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
         // full screen for old devices
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -86,7 +91,7 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
                 public void run() {
                     ResultsCheck();
                 }
-            }, 12000); // check for results after a delay
+            }, 12000); // check for results after a delay - NB: old slow devices need a bit of time.
         }
     }
 
@@ -104,6 +109,8 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
         {
             _multicastLock.release();
         }
+
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     /**
@@ -149,38 +156,44 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
 
     /**
      * Called buy a worker when a scan locates a service
-     * Implementation detail of IMdnsCallbackListener
+     * Implementation detail of IScanCallbackListener
      *
      * @param serviceResult
      */
     @Override
     public void ServiceLocated(ServiceResult serviceResult) {
-        AddHolidayControls(serviceResult);
+        _serviceResults.add(serviceResult);
+        BindHolidayControls();
     }
 
     /**
      * Called buy a worker when a scan is taking place
-     * Implementation detail of IMdnsCallbackListener
+     * Implementation detail of IScanCallbackListener
      *
      * @param message the message to show in the spinner
      */
     @Override
-    public void TaskBusy(String message) {
+    public void ScanStarted(String message) {
         _progressDialog = new ProgressDialog(this);
         _progressDialog.setMessage(message);
         _progressDialog.show();
+
+        // A scan is starting flush results
+        _serviceResults.clear();
     }
 
     /**
      * Called by worker when a scan is completed
-     * Implementation detail of IMdnsCallbackListener
+     * Implementation detail of IScanCallbackListener
      */
     @Override
-    public void TaskCompleted() {
+    public void ScanCompleted() {
         if (_progressDialog != null && _progressDialog.isShowing()) {
             //hide the dialog
             _progressDialog.dismiss();
         }
+
+        ResultsCheck();
     }
 
     /** Restart the Activity in a way that works with devices pre API 11 */
@@ -261,41 +274,53 @@ public class MainActivity extends Activity implements IMdnsCallbackListener {
                 });
         AlertDialog alert = builder.create();
         alert.show();
+        alert.show();
     }
 
     /** See if the asynchronous scan operation has yielded any results */
     private void ResultsCheck() {
-        LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
-        _log.info("Results control count:" + linearLayout.getChildCount());
 
-        if (linearLayout.getChildCount() <= 0) {
+        _log.info("Results Check, Count: " + _serviceResults.size());
+        if (_serviceResults.size() <= 0) {
             _progressDialog.dismiss();
             AddNoResultsControls();
+        }
+        else
+        {
+            // TODO: Add Rescan Button
         }
     }
 
     /**
-     * Add the controls for each located device
+     * Add the controls for each located device.
+     * Binds the UI to the service results collection
      *
      * @param serviceResult POJO containing data from a scan
      */
-    private void AddHolidayControls(ServiceResult serviceResult) {
-        _log.debug("Creating device button - " + serviceResult.getName());
+    private void BindHolidayControls() {
+        _log.debug("Binding UI controls");
+
+        // Rebind the results list to the UI
 
         LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
+        linearLayout.removeAllViews();
+        linearLayout.invalidate();
 
-        ImageView imageView = new ImageView(this);
-        imageView.setOnClickListener(new HolidayClickListener(serviceResult.getIp(), this));
-        imageView.setImageResource(R.drawable.device);
-        imageView.setScaleType(ImageView.ScaleType.CENTER);
-        linearLayout.addView(imageView);
+        for(ServiceResult serviceResult : _serviceResults)
+        {
+            ImageView imageView = new ImageView(this);
+            imageView.setOnClickListener(new HolidayClickListener(serviceResult.getIp(), this));
+            imageView.setImageResource(R.drawable.device);
+            imageView.setScaleType(ImageView.ScaleType.CENTER);
+            linearLayout.addView(imageView);
 
-        TextView textView = new TextView(this);
-        textView.setOnClickListener(new HolidayClickListener(serviceResult.getIp(), this));
-        textView.setText(serviceResult.getName());
-        textView.setTypeface(Typeface.DEFAULT_BOLD);
-        textView.setGravity(Gravity.CENTER);
-        linearLayout.addView(textView);
+            TextView textView = new TextView(this);
+            textView.setOnClickListener(new HolidayClickListener(serviceResult.getIp(), this));
+            textView.setText(serviceResult.getName());
+            textView.setTypeface(Typeface.DEFAULT_BOLD);
+            textView.setGravity(Gravity.CENTER);
+            linearLayout.addView(textView);
+        }
     }
 
     /**

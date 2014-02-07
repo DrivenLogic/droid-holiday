@@ -32,14 +32,14 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
     private JmDNS _jmdns;
     private ServiceInfo[] _locatedMdnsServices;
     private WifiManager _wifiManager;
-    private IMdnsCallbackListener _callbackListener;
+    private IScanCallbackListener _callbackListener;
 
     /**
      * Constructor
      * @param callbackListener callback interface for the activity
      * @param wifiManager current connected WiFi manager for the device
      */
-    MdnsAsyncTask(IMdnsCallbackListener callbackListener, WifiManager wifiManager) {
+    MdnsAsyncTask(IScanCallbackListener callbackListener, WifiManager wifiManager) {
 
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler()); // TODO: Move to app class.
         _callbackListener = callbackListener;
@@ -49,7 +49,7 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
     /** Notify callback that we are starting work */
     @Override
     protected void onPreExecute() {
-        _callbackListener.TaskBusy("Looking for Holiday...");
+        _callbackListener.ScanStarted("Looking for Holiday...");
         super.onPreExecute();
     }
 
@@ -100,7 +100,7 @@ public class MdnsAsyncTask extends AsyncTask<Void, Void, Void> {
                 _callbackListener.ServiceLocated(new ServiceResult(serviceInfo.getURL(),serviceInfo.getName()));
             }
         }
-        _callbackListener.TaskCompleted();
+        _callbackListener.ScanCompleted();
 
         super.onPostExecute(v);
     }

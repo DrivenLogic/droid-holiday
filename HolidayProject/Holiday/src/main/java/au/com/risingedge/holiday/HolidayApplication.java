@@ -12,5 +12,5 @@ import android.app.Application;
  *  @author andrew.stone@drivenlogic.com.au
  */
 public class HolidayApplication extends Application {
-    // TODO: Wire up global handle [AS]
+    // TODO: move Default Exception handler here.
 }

@@ -4,15 +4,6 @@
 ./gradlew clean
 ./gradlew build
 
-# devices udev 
-
-Galaxy S3
-[ 4502.594364] usb 1-1.2: New USB device found, idVendor=04e8, idProduct=6860
-[ 4502.594367] usb 1-1.2: New USB device strings: Mfr=2, Product=3, SerialNumber=4
-
-Galaxy Tab 7.7
-[ 4367.163294] usb 3-1.2: New USB device found, idVendor=04e8, idProduct=6860
-
 #logcat
 
 /home/stonie/software.packages/android-studio/sdk/platform-tools
