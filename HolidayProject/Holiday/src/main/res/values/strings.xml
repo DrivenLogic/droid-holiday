@@ -8,4 +8,5 @@
     <string name="tcp_scan_warning">Caution! Scanning your network for Holidays could be interpreted as an attack. If this is not your home network, you should ask permission before you perform this scan</string>
     <string name="tcp_result_warning">Please bookmark this Holiday in your browser</string>
     <string name="help_url">http://support.moorescloud.com/help/android/</string>
+    <string name="battery_low_warning">The battery is below 35% please note that power saving features may prevent this application finding your Holiday</string>
 </resources>

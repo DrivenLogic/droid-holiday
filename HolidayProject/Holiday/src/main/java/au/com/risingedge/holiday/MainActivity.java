@@ -9,11 +9,13 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
@@ -72,6 +74,13 @@ public class MainActivity extends Activity implements IScanCallbackListener {
      * Scan Threads started here
      */
     private void RunScan() {
+
+        if(BatteryIsLow())
+        {
+            // warn that batter is low and scanning may be affected
+            ShowDialogBatteryAlert(getResources().getString(R.string.battery_low_warning));
+        }
+
         // check that WiFi is enabled - if not warn user and open wifi intent
         _wiFiManager = (WifiManager) this.getSystemService(android.content.Context.WIFI_SERVICE);
 
@@ -282,6 +291,24 @@ public class MainActivity extends Activity implements IScanCallbackListener {
         alert.show();
     }
 
+    /**
+     * Battery Low Alert Box
+     *
+     * @param string text for the dialog
+     */
+    private void ShowDialogBatteryAlert(String string) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(string)
+                .setCancelable(true)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // don't do anything
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
     /** See if the asynchronous scan operation has yielded any results */
     private void ResultsCheck() {
 
@@ -371,6 +398,36 @@ public class MainActivity extends Activity implements IScanCallbackListener {
         LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
         linearLayout.removeView(this.findViewById(NO_RESULTS_VIEW_ID)); // remove the not found view container
         linearLayout.invalidate();
+    }
+
+    /**
+     * Some devices have a "power saving mode" which can disable features e.g. MDNS.
+     * In order to avoid this we want the user if battery is lower than 35%
+     * @return true if battery charge percentage is lower than 35%
+     */
+    private boolean BatteryIsLow() {
+
+        Intent batteryIntent = registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        float batteryPercent = 0;
+
+        try {
+
+            int level = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+            int scale = batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+            batteryPercent = level / (float) scale;
+
+        } catch (Throwable ex) {
+            _log.error("Could not get battery state?", ex);
+            return false;
+        }
+
+        // this is a best guess as the actual setting is user configurable.
+        if (batteryPercent <= 0.35) {
+            _log.debug("Battery level is: " + batteryPercent + "%");
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 
