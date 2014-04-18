@@ -43,7 +43,7 @@ public class MdnsRunnable implements Runnable {
      * @param uiHandler        a handler created by the UI thread
      */
     MdnsRunnable(IScanCallbackListener callbackListener, WifiManager wifiManager, Handler uiHandler) {
-        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler()); // TODO: move to app class.
+        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         _callbackListener = callbackListener;
         _wifiManager = wifiManager;
         _uiHandler = uiHandler;
@@ -75,14 +75,19 @@ public class MdnsRunnable implements Runnable {
                 @Override
                 public void serviceAdded(final ServiceEvent event) {
                     try {
+
                         _log.info("Service added Called - Requesting service info");
 
-                        _mdnsResolutionHandler.post(new Runnable() {
+                        final String type = event.getType();
+                        final String name = event.getName();
+
+                        _mdnsResolutionHandler.postDelayed(new Runnable() {
                             public void run() {
-                                // needs to be in it's own thread to raise events on droid
-                                _jmdns.requestServiceInfo(event.getType(), event.getName());
+
+                                // needs to be in it's own thread to raise events on droid !?
+                                _jmdns.requestServiceInfo(type, name);
                             }
-                        });
+                        },1000);
 
                     } catch (Throwable ex) {
                         ex.printStackTrace();
@@ -100,7 +105,6 @@ public class MdnsRunnable implements Runnable {
                         _uiHandler.post(new Runnable() {
                             public void run() {
                                 _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
-                                _callbackListener.ScanCompleted(); // remove the spinner after the first result is available
                             }
                         });
                     } else {
@@ -110,6 +114,8 @@ public class MdnsRunnable implements Runnable {
 
                 @Override
                 public void serviceRemoved(ServiceEvent serviceEvent) {
+
+                    // ok in practice it appears this never fires.
                     _log.debug("Service removed: " + serviceEvent.getName() + "." + serviceEvent.getType());
                 }
 

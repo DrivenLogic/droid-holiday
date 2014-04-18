@@ -1,20 +1,19 @@
 
 #gradle commands
-
 ./gradlew clean
 ./gradlew build
 
 #logcat
-
-/home/stonie/software.packages/android-studio/sdk/platform-tools
+cd /home/stonie/software.packages/android-studio/sdk/platform-tools
 ./adb logcat
 ./adb -d shell getprop | grep product
 
 # API Test
-
 curl -X PUT -d @red.json http://192.168.1.104/iotas/0.1/device/moorescloud.holiday/localhost/setlights
 
 # Kill intellij
-
 ps aux | grep -ie intellij | awk '{print $2}' | xargs kill -9 
+
+# Find service on linux
+avahi-browse _iotas._tcp
 

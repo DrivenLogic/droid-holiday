@@ -18,6 +18,7 @@ import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.view.Gravity;
 import android.view.Menu;
@@ -33,7 +34,8 @@ import android.widget.TextView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * An Activity where scanning tasks are started and results are displayed
@@ -47,8 +49,11 @@ public class MainActivity extends Activity implements IScanCallbackListener {
     private WifiManager _wiFiManager;
     private WifiManager.MulticastLock _multicastLock;
     private Handler _uiHandler;
-    private ArrayList<ServiceResult> _serviceResults = new ArrayList<ServiceResult>();
+
     private static final int NO_RESULTS_VIEW_ID = 1024;
+    private static final long SCAN_TIMEOUT_MILLIS = 10000;
+
+    private ServiceResults _serviceResults = new ServiceResults();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,16 +69,16 @@ public class MainActivity extends Activity implements IScanCallbackListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        _uiHandler = new Handler();
+        _uiHandler = new Handler(); // a handle created on the UI thread.
 
-        RunScan();
+        BeginHolidaySearch();
     }
 
     /**
      * Run the jmDNS scan
      * Scan Threads started here
      */
-    private void RunScan() {
+    private void BeginHolidaySearch() {
 
         if(BatteryIsLow())
         {
@@ -88,19 +93,38 @@ public class MainActivity extends Activity implements IScanCallbackListener {
 
             // take a multicast lock
             _multicastLock = _wiFiManager.createMulticastLock("lockString");
+            _multicastLock.setReferenceCounted(true);
             _multicastLock.acquire();
 
             new Thread(new MdnsRunnable(this, _wiFiManager, _uiHandler)).start();
 
             _log.debug("Scan running");
 
-            // results check for jmdns in asynchronous mode
-            _uiHandler.postDelayed(new Runnable() {
+            // track scan time
+            final long ScanStartTime = SystemClock.elapsedRealtime();
+
+            // JMDNS has some quirks that need to be worked around.
+            // an an interval check for a lack of results.
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    ResultsCheck();
+
+                    // post on the UI message pump
+                    _uiHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            long endTime = SystemClock.elapsedRealtime();
+                            long elapsedMilliSeconds = endTime - ScanStartTime;
+
+                            CheckResults(elapsedMilliSeconds);
+                        }
+                    });
                 }
-            }, 12000); // check for results after a delay - NB: old slow devices need a bit of time.
+
+            },4000 // first check.
+            , 1500); // subsequent checks...
         }
     }
 
@@ -150,7 +174,7 @@ public class MainActivity extends Activity implements IScanCallbackListener {
         switch (item.getItemId()) {
 
             case R.id.action_rescan:
-                ActivityRestart();
+                ActivityRestart(); // suspect
                 return true;
 
             case R.id.action_help:
@@ -160,10 +184,10 @@ public class MainActivity extends Activity implements IScanCallbackListener {
                 this.startActivity(i);
                 return true;
 
-//            case R.id.action_sendLogs:
-//                // ship logs
-//                new LogShipperAsyncTask(this).execute();
-//                return true;
+            case R.id.action_sendLogs:
+                // ship logs
+                new LogShipperAsyncTask(this).execute();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -176,8 +200,7 @@ public class MainActivity extends Activity implements IScanCallbackListener {
      */
     @Override
     public void ServiceLocated(ServiceResult serviceResult) {
-        _serviceResults.add(serviceResult);
-        BindHolidayControls();
+        _serviceResults.AddServiceResult(serviceResult);
     }
 
     /**
@@ -191,9 +214,6 @@ public class MainActivity extends Activity implements IScanCallbackListener {
         _progressDialog = new ProgressDialog(this);
         _progressDialog.setMessage(message);
         _progressDialog.show();
-
-        // A scan is starting flush results
-        _serviceResults.clear();
     }
 
     /**
@@ -206,13 +226,10 @@ public class MainActivity extends Activity implements IScanCallbackListener {
             //hide the dialog
             _progressDialog.dismiss();
         }
-
-        ResultsCheck();
     }
 
     /** Restart the Activity in a way that works with devices pre API 11 */
     private void ActivityRestart() {
-        _serviceResults.clear();
         Intent intent = getIntent();
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         finish();
@@ -276,7 +293,6 @@ public class MainActivity extends Activity implements IScanCallbackListener {
     /**
      * TCP Scan Alert Box
      *
-     * @param string text for the dialog
      */
     private void ShowDialogTcpScanWarning() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -310,12 +326,23 @@ public class MainActivity extends Activity implements IScanCallbackListener {
     }
 
     /** See if the asynchronous scan operation has yielded any results */
-    private void ResultsCheck() {
+    private void CheckResults(long scanTime) {
 
-        _log.info("Results Check, Count: " + _serviceResults.size());
-        if (_serviceResults.size() <= 0) {
+        // if the service results collection is empty and it's been long enough...
+        if ((_serviceResults.Size() <= 0) && (scanTime > SCAN_TIMEOUT_MILLIS)) {
             _progressDialog.dismiss();
-            AddNoResultsControls();
+            ShowNoResultsControls();
+        }
+        else
+        {
+            // we have a result - remove spinner
+            if (_progressDialog != null && _progressDialog.isShowing()) {
+                //hide the dialog
+                _progressDialog.dismiss();
+            }
+
+            // bind the GUI to the results.
+            BindHolidayControls();
         }
     }
 
@@ -323,7 +350,6 @@ public class MainActivity extends Activity implements IScanCallbackListener {
      * Add the controls for each located device.
      * Binds the UI to the service results collection
      *
-     * @param serviceResult POJO containing data from a scan
      */
     private void BindHolidayControls() {
         _log.debug("Binding UI controls");
@@ -334,7 +360,7 @@ public class MainActivity extends Activity implements IScanCallbackListener {
         linearLayout.removeAllViews();
         linearLayout.invalidate();
 
-        for(ServiceResult serviceResult : _serviceResults)
+        for(ServiceResult serviceResult : _serviceResults.GetResults())
         {
             ImageView imageView = new ImageView(this);
             imageView.setImageResource(R.drawable.device);
@@ -354,41 +380,50 @@ public class MainActivity extends Activity implements IScanCallbackListener {
     /**
      * Add the controls needed when there were no results
      */
-    private void AddNoResultsControls() {
-        _log.debug("Creating no results found controls ");
-        final LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
+    private void ShowNoResultsControls() {
 
-        // we need somewhere to stash the controls so they can be removed as a group
-        LinearLayout NoResultslinearLayout = new LinearLayout(this);
-        NoResultslinearLayout.setOrientation(LinearLayout.VERTICAL);
-        NoResultslinearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT));
-        NoResultslinearLayout.setId(NO_RESULTS_VIEW_ID); // API Level <= 17
+        // Check to see if the no results controls are already present.
+        if(this.findViewById(R.id.verticalLinearLayout)==null)
+        {
+            _log.debug("Creating no results found controls ");
+            final LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
 
-        TextView textView = new TextView(this);
-        textView.setText("Holiday not found");
-        textView.setTypeface(Typeface.DEFAULT_BOLD);
-        textView.setGravity(Gravity.CENTER);
-        NoResultslinearLayout.addView(textView);
+            // we need somewhere to stash the controls so they can be removed as a group
+            LinearLayout NoResultslinearLayout = new LinearLayout(this);
+            NoResultslinearLayout.setOrientation(LinearLayout.VERTICAL);
+            NoResultslinearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT));
+            NoResultslinearLayout.setId(NO_RESULTS_VIEW_ID); // API Level <= 17
 
-        Button button = new Button(this);
-        button.setText("Try a deep scan?");
-        button.setTypeface(Typeface.DEFAULT_BOLD);
-        button.setGravity(Gravity.CENTER);
+            TextView textView = new TextView(this);
+            textView.setText("Holiday not found");
+            textView.setTypeface(Typeface.DEFAULT_BOLD);
+            textView.setGravity(Gravity.CENTER);
+            NoResultslinearLayout.addView(textView);
 
-        // let the user run a TCP Scan
-        button.setOnClickListener(new
-                                          View.OnClickListener() {
-                                              @Override
-                                              public void onClick(View view) {
-                                                  linearLayout.removeAllViews();
-                                                  ShowDialogTcpScanWarning();
-                                              }
-                                          });
+            Button button = new Button(this);
+            button.setText("Try a deep scan?");
+            button.setTypeface(Typeface.DEFAULT_BOLD);
+            button.setGravity(Gravity.CENTER);
 
-        NoResultslinearLayout.addView(button);
+            // let the user run a TCP Scan
+            button.setOnClickListener(new
+                                              View.OnClickListener() {
+                                                  @Override
+                                                  public void onClick(View view) {
+                                                      linearLayout.removeAllViews();
+                                                      ShowDialogTcpScanWarning();
+                                                  }
+                                              });
 
-        // now add to the parent
-        linearLayout.addView(NoResultslinearLayout);
+            NoResultslinearLayout.addView(button);
+
+            // now add to the parent
+            linearLayout.addView(NoResultslinearLayout);
+        }
+        else
+        {
+            _log.debug("no results control already displayed... skiping add");
+        }
     }
 
     /** Removes the no results view elements by ID : API Level <= 17 */
@@ -401,8 +436,9 @@ public class MainActivity extends Activity implements IScanCallbackListener {
     }
 
     /**
-     * Some devices have a "power saving mode" which can disable features e.g. MDNS.
-     * In order to avoid this we want the user if battery is lower than 35%
+     * Some devices have a "power saving mode" (Samsung) which can disable features e.g. MDNS.
+     * In order to avoid this we warn the user if battery is lower than 35%
+     *
      * @return true if battery charge percentage is lower than 35%
      */
     private boolean BatteryIsLow() {
