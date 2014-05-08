@@ -37,6 +37,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import au.com.risingedge.holiday.mdns.MdnsRunnable;
+
 /**
  * An Activity where scanning tasks are started and results are displayed
  *

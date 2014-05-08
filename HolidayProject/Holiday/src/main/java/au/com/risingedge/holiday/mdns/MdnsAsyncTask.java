@@ -20,7 +20,7 @@ import javax.jmdns.ServiceInfo;
  *
  *  NOTE: some devices return erratically when the approach is used.
  *  Current testing favors the Runnable approach in MdnsRunnable
- *  @see au.com.risingedge.holiday.MdnsRunnable
+ *  @see au.com.risingedge.holiday.mdns.MdnsRunnable
  *
  *  @author andrew.stone@drivenlogic.com.au
  */

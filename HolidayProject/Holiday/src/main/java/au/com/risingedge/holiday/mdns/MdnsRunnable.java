@@ -2,7 +2,7 @@
  * Holiday For Android - http://moorescloud.com
  * Developed by DrivenLogic.com.au
  * */
-package au.com.risingedge.holiday;
+package au.com.risingedge.holiday.mdns;
 
 import android.net.wifi.WifiManager;
 import android.os.Handler;
@@ -15,6 +15,11 @@ import java.io.IOException;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceListener;
+
+import au.com.risingedge.holiday.DefaultExceptionHandler;
+import au.com.risingedge.holiday.IScanCallbackListener;
+import au.com.risingedge.holiday.NetworkInfrastructure;
+import au.com.risingedge.holiday.ServiceResult;
 
 /**
  * A Runnable for threaded scanning
@@ -42,7 +47,7 @@ public class MdnsRunnable implements Runnable {
      * @param wifiManager      current connected WiFi manager for the device
      * @param uiHandler        a handler created by the UI thread
      */
-    MdnsRunnable(IScanCallbackListener callbackListener, WifiManager wifiManager, Handler uiHandler) {
+    public MdnsRunnable(IScanCallbackListener callbackListener, WifiManager wifiManager, Handler uiHandler) {
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         _callbackListener = callbackListener;
         _wifiManager = wifiManager;
@@ -99,12 +104,12 @@ public class MdnsRunnable implements Runnable {
                 public void serviceResolved(final ServiceEvent serviceEvent) {
                     _log.info("Service resolved: " + serviceEvent.getInfo());
 
-                    if ((serviceEvent.getInfo().getURL() != null) && (serviceEvent.getInfo().getName() != null)) {
+                    if ((serviceEvent.getInfo().getInet4Addresses()[0] != null) && (serviceEvent.getInfo().getName() != null)) {
 
                         // post to the UI thread
                         _uiHandler.post(new Runnable() {
                             public void run() {
-                                _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
+                                _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getInet4Addresses()[0].toString(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
                             }
                         });
                     } else {
