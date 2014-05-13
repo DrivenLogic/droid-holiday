@@ -6,20 +6,17 @@ package au.com.risingedge.holiday.mdns;
 
 import android.net.wifi.WifiManager;
 import android.os.Handler;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-
-import javax.jmdns.JmDNS;
-import javax.jmdns.ServiceEvent;
-import javax.jmdns.ServiceListener;
-
 import au.com.risingedge.holiday.DefaultExceptionHandler;
 import au.com.risingedge.holiday.IScanCallbackListener;
 import au.com.risingedge.holiday.NetworkInfrastructure;
 import au.com.risingedge.holiday.ServiceResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceListener;
+import java.io.IOException;
 
 /**
  * A Runnable for threaded scanning
@@ -104,12 +101,12 @@ public class MdnsRunnable implements Runnable {
                 public void serviceResolved(final ServiceEvent serviceEvent) {
                     _log.info("Service resolved: " + serviceEvent.getInfo());
 
-                    if ((serviceEvent.getInfo().getInet4Addresses()[0] != null) && (serviceEvent.getInfo().getName() != null)) {
+                    if ((serviceEvent.getInfo().getInetAddress().getAddress() != null) && (serviceEvent.getInfo().getName() != null)) {
 
                         // post to the UI thread
                         _uiHandler.post(new Runnable() {
                             public void run() {
-                                _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getInet4Addresses()[0].toString(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
+                                _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getInetAddress().toString(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
                             }
                         });
                     } else {
