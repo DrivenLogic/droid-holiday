@@ -101,12 +101,12 @@ public class MdnsRunnable implements Runnable {
                 public void serviceResolved(final ServiceEvent serviceEvent) {
                     _log.info("Service resolved: " + serviceEvent.getInfo());
 
-                    if ((serviceEvent.getInfo().getInetAddress().getAddress() != null) && (serviceEvent.getInfo().getName() != null)) {
+                    if ((serviceEvent.getInfo().getURL() != null) && (serviceEvent.getInfo().getName() != null)) {
 
                         // post to the UI thread
                         _uiHandler.post(new Runnable() {
                             public void run() {
-                                _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getInetAddress().toString(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
+                                _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
                             }
                         });
                     } else {

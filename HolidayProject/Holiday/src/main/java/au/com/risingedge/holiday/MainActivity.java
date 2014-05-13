@@ -25,6 +25,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import au.com.risingedge.holiday.Services.HolidayScanServiceConnection;
+import au.com.risingedge.holiday.Services.IHolidayScanServiceConnectListener;
+import au.com.risingedge.holiday.Services.IHolidayScanner;
 import au.com.risingedge.holiday.mdns.MdnsRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +40,7 @@ import java.util.TimerTask;
  *
  * @author andrew.stone@drivenlogic.com.au
  */
-public class MainActivity extends Activity implements IScanCallbackListener {
+public class MainActivity extends Activity implements IScanCallbackListener, IHolidayScanServiceConnectListener {
 
     private Logger _log = LoggerFactory.getLogger(MainActivity.class);
     private ProgressDialog _progressDialog;
@@ -49,6 +52,8 @@ public class MainActivity extends Activity implements IScanCallbackListener {
     private static final long SCAN_TIMEOUT_MILLIS = 10000;
 
     private ServiceResults _serviceResults = new ServiceResults();
+    private IHolidayScanner holidayScanner;
+    private HolidayScanServiceConnection scannerServiceConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +69,14 @@ public class MainActivity extends Activity implements IScanCallbackListener {
 
         _uiHandler = new Handler(); // a handle created on the UI thread.
 
-        BeginHolidaySearch();
+        scannerServiceConnection = new HolidayScanServiceConnection(this, this);
+        scannerServiceConnection.connect();
+
+    }
+
+    @Override
+    protected void onDestroy(){
+        scannerServiceConnection.disconnect();
     }
 
     /**
@@ -457,6 +469,13 @@ public class MainActivity extends Activity implements IScanCallbackListener {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public void onServiceConnected(IHolidayScanner scanner) {
+        holidayScanner = scanner;
+
+        BeginHolidaySearch();
     }
 }
 
