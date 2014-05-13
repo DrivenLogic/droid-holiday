@@ -12,5 +12,10 @@ import android.app.Application;
  *  @author andrew.stone@drivenlogic.com.au
  */
 public class HolidayApplication extends Application {
-    // TODO: move Default Exception handler here.
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
+    }
 }

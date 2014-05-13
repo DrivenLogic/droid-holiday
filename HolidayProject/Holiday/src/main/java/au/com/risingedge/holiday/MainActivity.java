@@ -20,24 +20,17 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
-import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
+import android.view.*;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
+import au.com.risingedge.holiday.mdns.MdnsRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Timer;
 import java.util.TimerTask;
-
-import au.com.risingedge.holiday.mdns.MdnsRunnable;
 
 /**
  * An Activity where scanning tasks are started and results are displayed
@@ -59,8 +52,6 @@ public class MainActivity extends Activity implements IScanCallbackListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
-
         _log.debug("Main Activity started");
 
         // full screen for old devices
@@ -244,7 +235,7 @@ public class MainActivity extends Activity implements IScanCallbackListener {
     private void StartTcpScan(){
         _log.info("Starting TCP scan...");
         RemoveNoResultsControls();
-        new TcpScanTask(this).execute();
+        new au.com.risingedge.holiday.TcpScanTask(this).execute();
     }
 
     /**
