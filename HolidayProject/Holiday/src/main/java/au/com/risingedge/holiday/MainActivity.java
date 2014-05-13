@@ -28,7 +28,6 @@ import android.widget.TextView;
 import au.com.risingedge.holiday.Services.HolidayScanServiceConnection;
 import au.com.risingedge.holiday.Services.IHolidayScanServiceConnectListener;
 import au.com.risingedge.holiday.Services.IHolidayScanner;
-import au.com.risingedge.holiday.mdns.MdnsRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +78,30 @@ public class MainActivity extends Activity implements IScanCallbackListener, IHo
         scannerServiceConnection.disconnect();
     }
 
+    /** onStart() */
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    /** onStop() */
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    /**
+     * onResume()
+     * Wifi is checked again here
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        CheckWifi();
+    }
+
     /**
      * Run the jmDNS scan
      * Scan Threads started here
@@ -91,20 +114,10 @@ public class MainActivity extends Activity implements IScanCallbackListener, IHo
             ShowDialogBatteryAlert(getResources().getString(R.string.battery_low_warning));
         }
 
-        // check that WiFi is enabled - if not warn user and open wifi intent
-        _wiFiManager = (WifiManager) this.getSystemService(android.content.Context.WIFI_SERVICE);
+        // check that WiFi is enabled - if not warn user and open wif     _wiFiManager = (WifiManager) this.getSystemService(android.content.Context.WIFI_SERVICE);
 
         if (CheckWifi()) {
-
-            // take a multicast lock
-            _multicastLock = _wiFiManager.createMulticastLock("lockString");
-            _multicastLock.setReferenceCounted(true);
-            _multicastLock.acquire();
-
-            new Thread(new MdnsRunnable(this, _wiFiManager, _uiHandler)).start();
-
-            _log.debug("Scan running");
-
+            holidayScanner.beginMdnsSearch(this, _uiHandler);
             // track scan time
             final long ScanStartTime = SystemClock.elapsedRealtime();
 
@@ -128,37 +141,9 @@ public class MainActivity extends Activity implements IScanCallbackListener, IHo
                     });
                 }
 
-            },4000 // first check.
-            , 1500); // subsequent checks...
+            }, 4000 // first check.
+                    , 1500); // subsequent checks...
         }
-    }
-
-    /** onStart() */
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    /** onStop() */
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if((_multicastLock!=null)&&(_multicastLock.isHeld()))
-        {
-            _multicastLock.release();
-        }
-
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    }
-
-    /**
-     * onResume()
-     * Wifi is checked again here
-     */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        CheckWifi();
     }
 
     /**
@@ -199,7 +184,7 @@ public class MainActivity extends Activity implements IScanCallbackListener, IHo
 
     /**
      * Called buy a worker when a scan locates a service
-     * Implementation detail of IScanCallbackListener
+     * Implementation detail of IS canCallbackListener
      *
      * @param serviceResult
      */
