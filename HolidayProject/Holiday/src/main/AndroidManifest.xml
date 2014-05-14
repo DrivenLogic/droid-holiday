@@ -41,7 +41,7 @@
         </activity>
 
         <service
-            android:name=".Services.HolidayScanService"
+            android:name=".Services.HolidayScannerService"
             android:enabled="true"
             android:exported="false" >
         </service>

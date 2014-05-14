@@ -9,6 +9,7 @@ import au.com.risingedge.holiday.IScanCallbackListener;
 import au.com.risingedge.holiday.ServiceResult;
 import au.com.risingedge.holiday.ServiceResults;
 import au.com.risingedge.holiday.mdns.MdnsRunnable;
+import au.com.risingedge.holiday.tcp.TcpScanTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,13 +30,14 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
     private Logger log = LoggerFactory.getLogger(HolidayScanner.class);
     private IHolidayScannerListener listener;
     private ServiceResults serviceResults = new ServiceResults();
+    private Handler uiHandler;
 
     public HolidayScanner(Context context) {
         this.context = context;
     }
 
     public void onCreate() {
-
+        uiHandler = new Handler(); // a handle created on the UI thread.
     }
 
     public void onDestroy() {
@@ -45,7 +47,7 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
     }
 
     @Override
-    public void beginMdnsSearch(final Handler uiHandler) {
+    public void beginMdnsSearch() {
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
         // take a multicast lock
@@ -82,6 +84,11 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
 
         }, 4000 // first check.
                 , 1500); // subsequent checks...
+    }
+
+    @Override
+    public void beginTcpScan(){
+        new TcpScanTask(listener).execute();
     }
 
     /** See if the asynchronous scan operation has yielded any results */

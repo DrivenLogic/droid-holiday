@@ -8,7 +8,9 @@ import android.os.Handler;
  * Date: 13/05/2014
  */
 public interface IHolidayScanner {
-    void beginMdnsSearch(Handler uiHandler);
+    void beginMdnsSearch();
+
+    void beginTcpScan();
 
     void registerListener(IHolidayScannerListener listener);
 }

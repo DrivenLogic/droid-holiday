@@ -25,7 +25,7 @@ public class HolidayScanServiceConnection implements ServiceConnection {
     }
 
     public void connect() {
-        Intent intent = new Intent(context, HolidayScanService.class);
+        Intent intent = new Intent(context, HolidayScannerService.class);
         boolean result = context.bindService(intent, this, Context.BIND_AUTO_CREATE);
         log.info("Holiday Scanner bind service result: " + result);
     }

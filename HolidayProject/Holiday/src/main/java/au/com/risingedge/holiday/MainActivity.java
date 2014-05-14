@@ -16,7 +16,6 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.Settings;
 import android.view.*;
 import android.widget.Button;
@@ -27,7 +26,6 @@ import au.com.risingedge.holiday.Services.HolidayScanServiceConnection;
 import au.com.risingedge.holiday.Services.IHolidayScanServiceConnectListener;
 import au.com.risingedge.holiday.Services.IHolidayScanner;
 import au.com.risingedge.holiday.Services.IHolidayScannerListener;
-import au.com.risingedge.holiday.tcp.TcpScanTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +38,6 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
 
     private Logger log = LoggerFactory.getLogger(MainActivity.class);
     private ProgressDialog progressDialog;
-    private Handler uiHandler;
 
     private static final int NO_RESULTS_VIEW_ID = 1024;
 
@@ -58,8 +55,6 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        uiHandler = new Handler(); // a handle created on the UI thread.
 
         scannerServiceConnection = new HolidayScanServiceConnection(this, this);
         scannerServiceConnection.connect();
@@ -113,7 +108,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
             return;
         }
 
-        holidayScanner.beginMdnsSearch(uiHandler);
+        holidayScanner.beginMdnsSearch();
     }
 
     /**
@@ -204,7 +199,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
     private void StartTcpScan(){
         log.info("Starting TCP scan...");
         RemoveNoResultsControls();
-        new TcpScanTask(this).execute();
+        holidayScanner.beginTcpScan();
     }
 
     /**
