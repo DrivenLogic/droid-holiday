@@ -29,7 +29,6 @@ public class MdnsRunnable implements Runnable {
 
     private final static String MDNS_SERVICE_TYPE = "_iotas._tcp.local.";
 
-    private WifiManager.MulticastLock _multicastLock;
     private JmDNS _jmdns = null;
     private ServiceListener _mdnsServicelistener;
     private WifiManager _wifiManager;

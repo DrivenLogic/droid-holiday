@@ -2,10 +2,13 @@
  * Holiday For Android - http://moorescloud.com
  *
  * */
-package au.com.risingedge.holiday;
+package au.com.risingedge.holiday.tcp;
 
 import android.os.AsyncTask;
-
+import au.com.risingedge.holiday.NetworkInfrastructure;
+import au.com.risingedge.holiday.ServiceResult;
+import au.com.risingedge.holiday.ServiceResults;
+import au.com.risingedge.holiday.Services.IHolidayScannerListener;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -17,13 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.net.*;
 
 /**
  * When all else fails use a simple port scan.
@@ -34,10 +31,10 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
 
     private Logger _log = LoggerFactory.getLogger(TcpScanTask.class);
     private static final int TIMEOUT = 300; // Should be plenty for a lan.
-    private IScanCallbackListener _callbackListener;
-    private ArrayList<ServiceResult> _serviceResults = new ArrayList<ServiceResult>();
+    private IHolidayScannerListener _callbackListener;
+    private ServiceResults _serviceResults = new ServiceResults();
 
-    TcpScanTask(IScanCallbackListener callbackListener)
+    public TcpScanTask(IHolidayScannerListener callbackListener)
     {
         _callbackListener = callbackListener;
     }
@@ -45,7 +42,7 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
     /** Notify callback that we are starting work */
     @Override
     protected void onPreExecute() {
-        _callbackListener.ScanStarted("Running a deep scan... this will take awhile...");
+        _callbackListener.onScanStart("Running a deep scan... this will take awhile...");
         super.onPreExecute();
     }
 
@@ -67,11 +64,8 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
     protected void onPostExecute(Void v) {
         super.onPostExecute(v);
 
-        for (ServiceResult serviceResult : _serviceResults) {
-            _callbackListener.ServiceLocated(serviceResult);
-        }
 
-        _callbackListener.ScanCompleted();
+        _callbackListener.onScanResults(_serviceResults);
     }
 
     /**
@@ -171,7 +165,7 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
                 String apiVersion = jsonObject.getString("version");
 
                 _log.debug("Found Holiday " +hostName+ " with IOTAS API version: " + apiVersion);
-                _serviceResults.add(new ServiceResult("http://" + ip, hostName, ServiceResult.ScanType.TCP_SCAN));
+                _serviceResults.addServiceResult(new ServiceResult("http://" + ip, hostName, ServiceResult.ScanType.TCP_SCAN));
             }
         }
 

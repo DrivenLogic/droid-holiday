@@ -9,7 +9,7 @@ public class ServiceResults {
 
     private ArrayList<ServiceResult> _serviceResults = new ArrayList<ServiceResult>();
 
-    public boolean AddServiceResult(ServiceResult serviceResult)
+    public boolean addServiceResult(ServiceResult serviceResult)
     {
         for (ServiceResult existingServiceResult : _serviceResults) {
 
@@ -26,7 +26,7 @@ public class ServiceResults {
         return true;
     }
 
-    public int Size(){
+    public int size(){
         return _serviceResults.size();
     }
 
