@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class PackageManagerWrapper {
 
-    private Logger _log = LoggerFactory.getLogger(PackageManagerWrapper.class);
+    private Logger log = LoggerFactory.getLogger(PackageManagerWrapper.class);
     private final Context context;
 
     public PackageManagerWrapper(Context context) {
@@ -67,7 +67,7 @@ public final class PackageManagerWrapper {
         try {
             return pm.getPackageInfo(context.getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
-            _log.debug("Failed to find PackageInfo for current App : " + context.getPackageName());
+            log.debug("Failed to find PackageInfo for current App : " + context.getPackageName());
             return null;
         } catch (RuntimeException e) {
             // To catch RuntimeException("Package manager has died") that can occur on some version of Android,

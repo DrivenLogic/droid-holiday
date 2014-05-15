@@ -11,25 +11,25 @@ package au.com.risingedge.holiday;
  */
 public class ServiceResult {
 
-    private String _location;
-    private String _name;
-    private ScanType _scanType;
+    private String location;
+    private String name;
+    private ScanType scanType;
 
-    public String get_location() { return _location; }
+    public String getLocation() { return location; }
     public String getName() {
-        return _name;
+        return name;
     }
-    public ScanType getScanType() { return _scanType; }
+    public ScanType getScanType() { return scanType; }
 
     /**
      * Constructor
-     * @param _location the Holiday's web GUI URL
-     * @param _name the Holidays's hostname
+     * @param location the Holiday's web GUI URL
+     * @param name the Holidays's hostname
      */
     public ServiceResult(String location, String name, ScanType scanType) {
-        _location = location;
-        _name = name;
-        _scanType = scanType;
+        this.location = location;
+        this.name = name;
+        this.scanType = scanType;
     }
 
     public enum ScanType {

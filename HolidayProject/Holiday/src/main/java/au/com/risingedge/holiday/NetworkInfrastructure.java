@@ -20,7 +20,7 @@ import java.util.Enumeration;
  */
 public class NetworkInfrastructure {
 
-    private Logger _log = LoggerFactory.getLogger(NetworkInfrastructure.class);
+    private Logger log = LoggerFactory.getLogger(NetworkInfrastructure.class);
 
     /**
      * Get InetAddress
@@ -42,7 +42,7 @@ public class NetworkInfrastructure {
             }
         } catch (SocketException ex) {
             ex.printStackTrace();
-            _log.error("Error when looking up IP address", ex);
+            log.error("Error when looking up IP address", ex);
         }
         return null;
     }

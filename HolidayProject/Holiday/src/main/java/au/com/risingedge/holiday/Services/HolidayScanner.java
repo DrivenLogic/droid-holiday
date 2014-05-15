@@ -84,7 +84,7 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
      * @param serviceResult
      */
     @Override
-    public void ServiceLocated(ServiceResult serviceResult) {
+    public void serviceLocated(ServiceResult serviceResult) {
         synchronized (serviceResults) {
             serviceResults.addServiceResult(serviceResult);
         }
@@ -95,14 +95,14 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
      *
      * @param message
      */
-    @Override public void ScanStarted(String message) {
+    @Override public void scanStarted(String message) {
         listener.onScanStart(message);
     }
 
     /**
      * done looking
      */
-    @Override public void ScanCompleted() {
+    @Override public void scanCompleted() {
         synchronized (serviceResults) {
             listener.onScanResults(serviceResults);
         }
@@ -149,5 +149,4 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
             multicastLock.release();
         }
     }
-
 }

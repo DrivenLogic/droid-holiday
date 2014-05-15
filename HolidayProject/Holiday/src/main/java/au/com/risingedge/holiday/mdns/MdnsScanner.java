@@ -36,7 +36,7 @@ public class MdnsScanner implements Handler.Callback {
     private final static String MDNS_SERVICE_TYPE = "_iotas._tcp.local.";
 
     private JmDNS jmdns = null;
-    private IScanCallbackListener _callbackListener;
+    private IScanCallbackListener callbacklistener;
     private MdnsServiceListener mdnsServiceListener;
 
     /**
@@ -45,7 +45,7 @@ public class MdnsScanner implements Handler.Callback {
      * @param callbackListener callback interface for the activity
      */
     public MdnsScanner(IScanCallbackListener callbackListener) {
-        _callbackListener = callbackListener;
+        callbacklistener = callbackListener;
         mdnsServiceListener = new MdnsServiceListener();
 
         // create our handler
@@ -57,7 +57,6 @@ public class MdnsScanner implements Handler.Callback {
         // create looper to handle messages
         Looper looper = thread.getLooper();
         threadMessageHandler = new Handler(looper, this);
-
     }
 
     /**
@@ -91,7 +90,7 @@ public class MdnsScanner implements Handler.Callback {
     private void runStartScan() {
 
         // inform the callback that we have started
-        _callbackListener.ScanStarted("looking for Holiday...");
+        callbacklistener.scanStarted("looking for Holiday...");
 
         try {
 
@@ -141,7 +140,7 @@ public class MdnsScanner implements Handler.Callback {
             log.info("Service resolved: " + serviceEvent.getInfo());
 
             if ((serviceEvent.getInfo().getURL() != null) && (serviceEvent.getInfo().getName() != null)) {
-                _callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
+                callbacklistener.serviceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
             }
             else {
                 log.warn("serviceEvent.getInfo() did not contain the required information to locate the Holiday");

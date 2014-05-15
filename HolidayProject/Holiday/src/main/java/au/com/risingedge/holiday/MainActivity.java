@@ -59,7 +59,6 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
 
         scannerServiceConnection = new HolidayScanServiceConnection(this, this);
         scannerServiceConnection.connect();
-
     }
 
     @Override
@@ -91,23 +90,23 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
     @Override
     protected void onResume() {
         super.onResume();
-        CheckWifi();
+        checkWifi();
     }
 
     /**
      * Run the jmDNS scan
      * Scan Threads started here
      */
-    private void BeginHolidaySearch() {
+    private void beginHolidaySearch() {
 
-        if(BatteryIsLow())
+        if(batteryIsLow())
         {
             // warn that batter is low and scanning may be affected
-            ShowDialogBatteryAlert(getResources().getString(R.string.battery_low_warning));
+            showDialogBatteryAlert(getResources().getString(R.string.battery_low_warning));
         }
 
         // check that WiFi is enabled - if not warn user and open wif
-        if (!CheckWifi()) {
+        if (!checkWifi()) {
             return;
         }
 
@@ -132,7 +131,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
         switch (item.getItemId()) {
 
             case R.id.action_rescan:
-                ActivityRestart(); // suspect
+                activityRestart(); // suspect
                 return true;
 
             case R.id.action_help:
@@ -191,18 +190,18 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
                 }
 
                 if (serviceResults.size() <= 0) {
-                    ShowNoResultsControls();
+                    showNoResultsControls();
                     return;
                 }
 
                 // bind the GUI to the results.
-                BindHolidayControls(serviceResults);
+                bindHolidayControls(serviceResults);
             }
         });
     }
 
     /** Restart the Activity in a way that works with devices pre API 11 */
-    private void ActivityRestart() {
+    private void activityRestart() {
         Intent intent = getIntent();
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         finish();
@@ -212,9 +211,9 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
     }
 
     /** Start a TCP scan to look for Holidays */
-    private void StartTcpScan(){
+    private void startTcpScan(){
         log.info("Starting TCP scan...");
-        RemoveNoResultsControls();
+        removeNoResultsControls();
         holidayScanner.beginTcpScan();
     }
 
@@ -225,13 +224,13 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
      *
      * @return a bool representing the state of the wifi
      */
-    private boolean CheckWifi() {
+    private boolean checkWifi() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo wifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         try {
             if (!wifi.isConnected()) {
                 log.info("WiFi is off! - Can't scan - user needs to enable WiFi - promoting user");
-                ShowDialogWifiAlert("Please enable WiFi and connect to same network as your Holiday");
+                showDialogWifiAlert("Please enable WiFi and connect to same network as your Holiday");
                 return false;
             } else {
                 return true;
@@ -239,7 +238,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
         } catch (Throwable ex) {
             ex.printStackTrace();
             log.error("Error getting Wifi State");
-            ShowDialogWifiAlert("Please enable WiFi and connect to same network as your Holiday");
+            showDialogWifiAlert("Please enable WiFi and connect to same network as your Holiday");
             return false;
         }
     }
@@ -249,7 +248,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
      *
      * @param string text for the dialog
      */
-    private void ShowDialogWifiAlert(String string) {
+    private void showDialogWifiAlert(String string) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(string)
                 .setCancelable(true)
@@ -267,13 +266,13 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
      * TCP Scan Alert Box
      *
      */
-    private void ShowDialogTcpScanWarning() {
+    private void showDialogTcpScanWarning() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.tcp_scan_warning)
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        StartTcpScan();
+                        startTcpScan();
                     }
                 });
         AlertDialog alert = builder.create();
@@ -285,7 +284,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
      *
      * @param string text for the dialog
      */
-    private void ShowDialogBatteryAlert(String string) {
+    private void showDialogBatteryAlert(String string) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(string)
                 .setCancelable(true)
@@ -304,7 +303,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
      *
      * @param serviceResults
      */
-    private void BindHolidayControls(ServiceResults serviceResults) {
+    private void bindHolidayControls(ServiceResults serviceResults) {
         log.debug("Binding UI controls");
 
         // Rebind the results list to the UI
@@ -313,16 +312,16 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
         linearLayout.removeAllViews();
         linearLayout.invalidate();
 
-        for(ServiceResult serviceResult : serviceResults.GetResults())
+        for(ServiceResult serviceResult : serviceResults.getResults())
         {
             ImageView imageView = new ImageView(this);
             imageView.setImageResource(R.drawable.device);
             imageView.setScaleType(ImageView.ScaleType.CENTER);
-            imageView.setOnClickListener(new HolidayClickListener(serviceResult.get_location(), this,serviceResult.getScanType()));
+            imageView.setOnClickListener(new HolidayClickListener(serviceResult.getLocation(), this,serviceResult.getScanType()));
             linearLayout.addView(imageView);
 
             TextView textView = new TextView(this);
-            textView.setOnClickListener(new HolidayClickListener(serviceResult.get_location(), this,serviceResult.getScanType()));
+            textView.setOnClickListener(new HolidayClickListener(serviceResult.getLocation(), this,serviceResult.getScanType()));
             textView.setText(serviceResult.getName());
             textView.setTypeface(Typeface.DEFAULT_BOLD);
             textView.setGravity(Gravity.CENTER);
@@ -333,7 +332,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
     /**
      * Add the controls needed when there were no results
      */
-    private void ShowNoResultsControls() {
+    private void showNoResultsControls() {
 
         // Check to see if the no results controls are already present.
         if(this.findViewById(R.id.verticalLinearLayout)==null)
@@ -364,7 +363,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
                                                   @Override
                                                   public void onClick(View view) {
                                                       linearLayout.removeAllViews();
-                                                      ShowDialogTcpScanWarning();
+                                                      showDialogTcpScanWarning();
                                                   }
                                               });
 
@@ -380,7 +379,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
     }
 
     /** Removes the no results view elements by ID : API Level <= 17 */
-    private void RemoveNoResultsControls() {
+    private void removeNoResultsControls() {
         log.debug("Removing no results found controls ");
 
         LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
@@ -394,7 +393,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
      *
      * @return true if battery charge percentage is lower than 35%
      */
-    private boolean BatteryIsLow() {
+    private boolean batteryIsLow() {
 
         Intent batteryIntent = registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         float batteryPercent = 0;
@@ -424,7 +423,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
         holidayScanner = scanner;
         holidayScanner.registerListener(this);
 
-        BeginHolidaySearch();
+        beginHolidaySearch();
     }
 }
 
