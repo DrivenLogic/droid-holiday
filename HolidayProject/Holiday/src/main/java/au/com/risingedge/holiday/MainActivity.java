@@ -20,7 +20,6 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.*;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import au.com.risingedge.holiday.Services.HolidayScanServiceConnection;
@@ -364,19 +363,16 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
         linearLayout.removeAllViews();
         linearLayout.invalidate();
 
-        for (ServiceResult serviceResult : serviceResults.GetResults()) {
-            ImageView imageView = new ImageView(this);
-            imageView.setImageResource(R.drawable.device);
-            imageView.setScaleType(ImageView.ScaleType.CENTER);
-            imageView.setOnClickListener(new HolidayClickListener(serviceResult.get_location(), this, serviceResult.getScanType()));
-            linearLayout.addView(imageView);
+        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            TextView textView = new TextView(this);
-            textView.setOnClickListener(new HolidayClickListener(serviceResult.get_location(), this, serviceResult.getScanType()));
+        for (ServiceResult serviceResult : serviceResults.GetResults()) {
+            View control = inflater.inflate(R.layout.holiday_control, linearLayout, false);
+            control.setOnClickListener(new HolidayClickListener(serviceResult.get_location(), this, serviceResult.getScanType()));
+
+            TextView textView = (TextView) control.findViewById(R.id.holiday_name);
             textView.setText(serviceResult.getName());
-            textView.setTypeface(Typeface.DEFAULT_BOLD);
-            textView.setGravity(Gravity.CENTER);
-            linearLayout.addView(textView);
+
+            linearLayout.addView(control);
         }
         viewState = ViewState.CONTROLS_FOUND;
     }
@@ -389,7 +385,6 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
         // Check to see if the no results controls are already present.
         if (viewState != ViewState.NO_CONTROLS_FOUND) {
             log.debug("Creating no results found controls ");
-//            final LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.verticalLinearLayout);
 
             // we need somewhere to stash the controls so they can be removed as a group
             LinearLayout NoResultslinearLayout = new LinearLayout(this);
