@@ -30,6 +30,9 @@ import au.com.risingedge.holiday.Services.IHolidayScannerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * An Activity where scanning tasks are started and results are displayed
  *
@@ -37,17 +40,20 @@ import org.slf4j.LoggerFactory;
  */
 public class MainActivity extends Activity implements IHolidayScanServiceConnectListener, IHolidayScannerListener {
 
+    private static final int NO_RESULTS_VIEW_ID = 1024;
+    private static final long SCAN_TIMEOUT_MILLIS = 10000;
+
+    private enum ViewState {UNINITIALIZED, MDNS_SCAN_IN_PROGRESS, TCP_SCAN_IN_PROGRESS, NO_CONTROLS_FOUND, CONTROLS_FOUND}
+
+    private ViewState viewState = ViewState.UNINITIALIZED;
+
     private Logger log = LoggerFactory.getLogger(MainActivity.class);
+    private IHolidayScanner holidayScanner;
+
+    private HolidayScanServiceConnection scannerServiceConnection;
     private ProgressDialog progressDialog;
 
-    private static final int NO_RESULTS_VIEW_ID = 1024;
-
-    private IHolidayScanner holidayScanner;
-    private HolidayScanServiceConnection scannerServiceConnection;
     private LinearLayout linearLayout;
-
-    private enum ViewState {UNINITIALIZED, SCAN_IN_PROGRESS, NO_CONTROLS_FOUND, CONTROLS_FOUND}
-    private ViewState viewState = ViewState.UNINITIALIZED;
 
 
     @Override
@@ -106,25 +112,6 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
     }
 
     /**
-     * Run the jmDNS scan
-     * Scan Threads started here
-     */
-    private void BeginHolidaySearch() {
-
-        if (BatteryIsLow()) {
-            // warn that batter is low and scanning may be affected
-            ShowDialogBatteryAlert(getResources().getString(R.string.battery_low_warning));
-        }
-
-        // check that WiFi is enabled - if not warn user and open wif
-        if (!CheckWifi()) {
-            return;
-        }
-
-        holidayScanner.beginMdnsSearch();
-    }
-
-    /**
      * onCreateOptionsMenu()
      *
      * @param menu
@@ -176,7 +163,6 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
         // make sure we run all callbacks on the ui thread
         runOnUiThread(new Runnable() {
             @Override public void run() {
-                viewState = ViewState.SCAN_IN_PROGRESS;
                 progressDialog = new ProgressDialog(context);
                 progressDialog.setMessage(message);
                 progressDialog.show();
@@ -198,10 +184,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
 
         runOnUiThread(new Runnable() {
             @Override public void run() {
-                if (progressDialog != null && progressDialog.isShowing()) {
-                    //hide the dialog
-                    progressDialog.dismiss();
-                }
+                hideProgressDialog();
 
                 if (serviceResults.size() <= 0) {
                     ShowNoResultsControls();
@@ -212,6 +195,56 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
                 BindHolidayControls(serviceResults);
             }
         });
+    }
+
+    /**
+     * Run the jmDNS scan
+     * Scan Threads started here
+     */
+    private void BeginHolidaySearch() {
+
+        if (BatteryIsLow()) {
+            // warn that batter is low and scanning may be affected
+            ShowDialogBatteryAlert(getResources().getString(R.string.battery_low_warning));
+        }
+
+        // check that WiFi is enabled - if not warn user and open wif
+        if (!CheckWifi()) {
+            return;
+        }
+
+        holidayScanner.beginMdnsSearch();
+        viewState = ViewState.MDNS_SCAN_IN_PROGRESS;
+
+        startSearchTimeout();
+    }
+
+    private void startSearchTimeout() {
+
+        // JMDNS has some quirks that need to be worked around.
+        // an an interval check for a lack of results.
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                // if the service results collection is empty and it's been long enough...
+                if (viewState == ViewState.MDNS_SCAN_IN_PROGRESS) {
+                    runOnUiThread(new Runnable() {
+                        @Override public void run() {
+                            hideProgressDialog();
+                            ShowNoResultsControls();
+                        }
+                    });
+                }
+            }
+        }, SCAN_TIMEOUT_MILLIS);
+    }
+
+    private void hideProgressDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            //hide the dialog
+            progressDialog.dismiss();
+        }
     }
 
     /**
@@ -232,7 +265,9 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
     private void StartTcpScan() {
         log.info("Starting TCP scan...");
         RemoveNoResultsControls();
+        holidayScanner.stopMdnsSearch();
         holidayScanner.beginTcpScan();
+        viewState = ViewState.TCP_SCAN_IN_PROGRESS;
     }
 
     /**
