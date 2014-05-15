@@ -166,6 +166,7 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
 
                 log.debug("Found Holiday " +hostName+ " with IOTAS API version: " + apiVersion);
                 serviceResults.addServiceResult(new ServiceResult("http://" + ip, hostName, ServiceResult.ScanType.TCP_SCAN));
+                callbackListener.onScanResults(_serviceResults);
             }
         }
 

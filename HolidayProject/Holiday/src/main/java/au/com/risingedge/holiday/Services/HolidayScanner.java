@@ -7,7 +7,6 @@ package au.com.risingedge.holiday.Services;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
-import android.os.SystemClock;
 import au.com.risingedge.holiday.IScanCallbackListener;
 import au.com.risingedge.holiday.ServiceResult;
 import au.com.risingedge.holiday.ServiceResults;
@@ -16,12 +15,7 @@ import au.com.risingedge.holiday.tcp.TcpScanTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 public class HolidayScanner extends Binder implements IHolidayScanner, IScanCallbackListener {
-
-    private static final long SCAN_TIMEOUT_MILLIS = 10000;
 
     private final Context context;
     private WifiManager.MulticastLock multicastLock;
@@ -51,8 +45,6 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
 
         mdnsScanner = new MdnsScanner(this);
         mdnsScanner.startScanning();
-
-        monitorMdnsResults();
     }
 
     @Override
@@ -87,6 +79,10 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
     public void serviceLocated(ServiceResult serviceResult) {
         synchronized (serviceResults) {
             serviceResults.addServiceResult(serviceResult);
+
+            if (listener != null){
+                listener.onScanResults(serviceResults);
+            }
         }
     }
 
@@ -106,33 +102,6 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
         synchronized (serviceResults) {
             listener.onScanResults(serviceResults);
         }
-    }
-
-    private void monitorMdnsResults() {
-        // track scan time
-        final long ScanStartTime = SystemClock.elapsedRealtime();
-
-        // JMDNS has some quirks that need to be worked around.
-        // an an interval check for a lack of results.
-        int initialDelay = 10;   // first check.
-        int monitorFrequency = 1500; // subsequent checks...
-
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                long elapsedMilliSeconds = SystemClock.elapsedRealtime() - ScanStartTime;
-                synchronized (serviceResults) {
-                    // if the service results collection is empty and it's been long enough...
-                    if ((serviceResults.size() > 0) || (elapsedMilliSeconds > SCAN_TIMEOUT_MILLIS)) {
-                        if (listener != null) {
-                            listener.onScanResults(serviceResults);
-                        }
-                    }
-                }
-
-            }
-        }, initialDelay, monitorFrequency);
     }
 
     private void aquireMulticastLock() {

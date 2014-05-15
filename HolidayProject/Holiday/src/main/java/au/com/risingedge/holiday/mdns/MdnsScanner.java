@@ -67,7 +67,10 @@ public class MdnsScanner implements Handler.Callback {
     }
 
     public void stopScanning() {
-        threadMessageHandler.sendEmptyMessage(STOP_SCAN);
+        if (threadMessageHandler != null){
+            threadMessageHandler.sendEmptyMessage(STOP_SCAN);
+        }
+        _callbackListener = null;
 
     }
 
@@ -140,7 +143,9 @@ public class MdnsScanner implements Handler.Callback {
             log.info("Service resolved: " + serviceEvent.getInfo());
 
             if ((serviceEvent.getInfo().getURL() != null) && (serviceEvent.getInfo().getName() != null)) {
-                callbacklistener.serviceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
+                if (callbackListener != null) {
+                    callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
+                }
             }
             else {
                 log.warn("serviceEvent.getInfo() did not contain the required information to locate the Holiday");

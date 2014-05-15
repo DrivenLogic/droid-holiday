@@ -9,4 +9,6 @@
     <string name="tcp_result_warning">Please bookmark this Holiday in your browser</string>
     <string name="help_url">http://support.moorescloud.com/help/android/</string>
     <string name="battery_low_warning">The battery is below 35% please note that power saving features may prevent this application finding your Holiday</string>
+    <string name="holiday_not_found">Holiday not found.\nWould you like to try a deep scan?</string>
+    <string name="try_deep_scan">Deep Scan…</string>
 </resources>
