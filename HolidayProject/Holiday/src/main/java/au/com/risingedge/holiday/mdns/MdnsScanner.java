@@ -117,12 +117,14 @@ public class MdnsScanner implements Handler.Callback {
 
             final String type = event.getType();
             final String name = event.getName();
+            log.info("Service added: type= " + type + ", name: " + name);
 
             Thread thread = new Thread() {
                 @Override
                 public void run() {
                     try {
                         // needs to be in it's own thread as it blocks
+                        log.info("Service added: Requesting service info");
                         jmdns.requestServiceInfo(type, name);
                     }
                     catch (Throwable ex) {

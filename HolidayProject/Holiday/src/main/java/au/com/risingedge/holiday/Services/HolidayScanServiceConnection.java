@@ -1,3 +1,7 @@
+/**
+ * Holiday For Android - http://moorescloud.com
+ * Developed by DrivenLogic.com.au
+ * */
 package au.com.risingedge.holiday.Services;
 
 import android.content.ComponentName;
@@ -8,11 +12,6 @@ import android.os.IBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Copyright (C) 2014 Tapestry International Limited. All rights reserved.
- * User: travis
- * Date: 13/05/2014
- */
 public class HolidayScanServiceConnection implements ServiceConnection {
     private Logger log = LoggerFactory.getLogger(HolidayScanServiceConnection.class);
     private Context context;

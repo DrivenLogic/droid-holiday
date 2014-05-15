@@ -1,3 +1,7 @@
+/**
+ * Holiday For Android - http://moorescloud.com
+ * Developed by DrivenLogic.com.au
+ * */
 package au.com.risingedge.holiday.Services;
 
 import android.content.Context;
@@ -15,11 +19,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Timer;
 import java.util.TimerTask;
 
-/**
- * Copyright (C) 2014 Tapestry International Limited. All rights reserved.
- * User: travis
- * Date: 13/05/2014
- */
 public class HolidayScanner extends Binder implements IHolidayScanner, IScanCallbackListener {
 
     private static final long SCAN_TIMEOUT_MILLIS = 10000;
@@ -40,9 +39,7 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
 
     public void onDestroy() {
         log.info("HolidayScanner service destroyed");
-        if ((multicastLock != null) && (multicastLock.isHeld())) {
-            multicastLock.release();
-        }
+        releaseMulticastLock();
     }
 
     @Override
@@ -50,23 +47,17 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
         log.info("ServiceResults count: " + serviceResults.size());
 
 
-        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-
-        // take a multicast lock
-        multicastLock = wifiManager.createMulticastLock("lockString");
-        multicastLock.setReferenceCounted(true);
-        multicastLock.acquire();
+        aquireMulticastLock();
 
         mdnsScanner = new MdnsScanner(this);
         mdnsScanner.startScanning();
 
-        log.debug("Scan running");
         monitorMdnsResults();
     }
 
     @Override
     public void stopMdnsSearch() {
-        if (mdnsScanner != null){
+        if (mdnsScanner != null) {
             mdnsScanner.stopScanning();
         }
     }
@@ -123,7 +114,7 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
 
         // JMDNS has some quirks that need to be worked around.
         // an an interval check for a lack of results.
-        int initialDelay = 4000;   // first check.
+        int initialDelay = 10;   // first check.
         int monitorFrequency = 1500; // subsequent checks...
 
         Timer timer = new Timer();
@@ -131,14 +122,32 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
             @Override
             public void run() {
                 long elapsedMilliSeconds = SystemClock.elapsedRealtime() - ScanStartTime;
-
-                // if the service results collection is empty and it's been long enough...
-                if ((serviceResults.size() > 0) || (elapsedMilliSeconds > SCAN_TIMEOUT_MILLIS)) {
-                    listener.onScanResults(serviceResults);
+                synchronized (serviceResults) {
+                    // if the service results collection is empty and it's been long enough...
+                    if ((serviceResults.size() > 0) || (elapsedMilliSeconds > SCAN_TIMEOUT_MILLIS)) {
+                        if (listener != null) {
+                            listener.onScanResults(serviceResults);
+                        }
+                    }
                 }
 
             }
-        }, monitorFrequency, monitorFrequency);
+        }, initialDelay, monitorFrequency);
+    }
+
+    private void aquireMulticastLock() {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+
+        // take a multicast lock
+        multicastLock = wifiManager.createMulticastLock("lockString");
+        multicastLock.setReferenceCounted(true);
+        multicastLock.acquire();
+    }
+
+    private void releaseMulticastLock() {
+        if ((multicastLock != null) && (multicastLock.isHeld())) {
+            multicastLock.release();
+        }
     }
 
 }
