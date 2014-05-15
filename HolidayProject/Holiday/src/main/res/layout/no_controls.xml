@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/no_results_view"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:layout_marginTop="50dp">
+    <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="normal"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:text="@string/holiday_not_found"/>
+    <Button
+            android:id="@+id/deep_scan_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="normal"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:text="@string/try_deep_scan"
+            android:textSize="18sp"
+            android:layout_margin="10dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="20dp"
+            android:paddingLeft="40dp"
+            android:paddingRight="40dp"
+            />
+
+</LinearLayout>

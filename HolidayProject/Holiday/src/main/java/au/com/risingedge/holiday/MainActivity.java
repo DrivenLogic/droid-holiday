@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -363,7 +362,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
         linearLayout.removeAllViews();
         linearLayout.invalidate();
 
-        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         for (ServiceResult serviceResult : serviceResults.GetResults()) {
             View control = inflater.inflate(R.layout.holiday_control, linearLayout, false);
@@ -386,37 +385,19 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
         if (viewState != ViewState.NO_CONTROLS_FOUND) {
             log.debug("Creating no results found controls ");
 
-            // we need somewhere to stash the controls so they can be removed as a group
-            LinearLayout NoResultslinearLayout = new LinearLayout(this);
-            NoResultslinearLayout.setOrientation(LinearLayout.VERTICAL);
-            NoResultslinearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT));
-            NoResultslinearLayout.setId(NO_RESULTS_VIEW_ID); // API Level <= 17
+            LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            TextView textView = new TextView(this);
-            textView.setText("Holiday not found");
-            textView.setTypeface(Typeface.DEFAULT_BOLD);
-            textView.setGravity(Gravity.CENTER);
-            NoResultslinearLayout.addView(textView);
+            View control = inflater.inflate(R.layout.no_controls, linearLayout, false);
+            Button deepScanButton = (Button) control.findViewById(R.id.deep_scan_button);
+            deepScanButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    linearLayout.removeAllViews();
+                    ShowDialogTcpScanWarning();
+                }
+            });
 
-            Button button = new Button(this);
-            button.setText("Try a deep scan?");
-            button.setTypeface(Typeface.DEFAULT_BOLD);
-            button.setGravity(Gravity.CENTER);
-
-            // let the user run a TCP Scan
-            button.setOnClickListener(new
-                                              View.OnClickListener() {
-                                                  @Override
-                                                  public void onClick(View view) {
-                                                      linearLayout.removeAllViews();
-                                                      ShowDialogTcpScanWarning();
-                                                  }
-                                              });
-
-            NoResultslinearLayout.addView(button);
-
-            // now add to the parent
-            linearLayout.addView(NoResultslinearLayout);
+            linearLayout.addView(control);
 
             viewState = ViewState.NO_CONTROLS_FOUND;
         }
@@ -431,7 +412,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
     private void RemoveNoResultsControls() {
         log.debug("Removing no results found controls ");
 
-        linearLayout.removeView(this.findViewById(NO_RESULTS_VIEW_ID)); // remove the not found view container
+        linearLayout.removeView(this.findViewById(R.id.no_results_view)); // remove the not found view container
         linearLayout.invalidate();
     }
 
