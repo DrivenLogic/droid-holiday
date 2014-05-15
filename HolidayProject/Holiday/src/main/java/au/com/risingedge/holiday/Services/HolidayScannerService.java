@@ -9,6 +9,11 @@ public class HolidayScannerService extends Service {
     private HolidayScanner scanner = new HolidayScanner(this);
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY; // sets the service to stay alive
+    }
+
+    @Override
     public IBinder onBind(Intent intent) {
         return scanner;
     }

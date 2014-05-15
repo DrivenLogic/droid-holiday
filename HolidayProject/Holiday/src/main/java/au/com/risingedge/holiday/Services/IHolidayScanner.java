@@ -1,7 +1,5 @@
 package au.com.risingedge.holiday.Services;
 
-import android.os.Handler;
-
 /**
  * Copyright (C) 2014 Tapestry International Limited. All rights reserved.
  * User: travis
@@ -13,4 +11,8 @@ public interface IHolidayScanner {
     void beginTcpScan();
 
     void registerListener(IHolidayScannerListener listener);
+
+    void unregisterListener(IHolidayScannerListener listener);
+
+    void stopMdnsSearch();
 }

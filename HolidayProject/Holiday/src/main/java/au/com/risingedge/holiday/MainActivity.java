@@ -65,6 +65,8 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
     @Override
     protected void onDestroy(){
         super.onDestroy();
+        holidayScanner.stopMdnsSearch();
+        holidayScanner.unregisterListener(this);
         scannerServiceConnection.disconnect();
     }
 
