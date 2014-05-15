@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SplashScreen extends Activity {
 
-    private Logger _log = LoggerFactory.getLogger(SplashScreen.class);
+    private Logger log = LoggerFactory.getLogger(SplashScreen.class);
     private static final int SPLASH_TIME_OUT = 2000;
 
     @Override
@@ -37,7 +37,7 @@ public class SplashScreen extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        _log.debug("Splash displayed");
+        log.debug("Splash displayed");
 
         // splash!
         new Handler().postDelayed(new Runnable() {

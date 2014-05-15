@@ -27,19 +27,19 @@ import org.slf4j.LoggerFactory;
  */
 public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
 
-    private Logger _log = LoggerFactory.getLogger(LogShipperAsyncTask.class);
+    private Logger log = LoggerFactory.getLogger(LogShipperAsyncTask.class);
     private final static String LINE_SEPARATOR = System.getProperty("line.separator");
     private static final String[] SEND_TO_MAILBOXES = new String[]{"andrew.stone@drivenlogic.com.au", "mpesce@gmail.com"};
     private final static String LOG_FILENAME = "Holiday.log";
-    private Context _context;
-    private String _reportTitle = "";
+    private Context context;
+    private String reportTitle = "";
 
     /**
      * Constructor
      * @param activity
      */
     LogShipperAsyncTask(Activity activity) {
-        _context = activity;
+        context = activity;
     }
 
     /**
@@ -52,10 +52,10 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
 
         StringBuilder stringBuilder = new StringBuilder().append(LINE_SEPARATOR);
 
-        GetEnvironmentDetails(stringBuilder);
-        ReadSdLog(stringBuilder);
+        getEnvironmentDetails(stringBuilder);
+        readSdLog(stringBuilder);
 
-        _log.debug("Logs collected, log length is: " + stringBuilder.length());
+        log.debug("Logs collected, log length is: " + stringBuilder.length());
         return stringBuilder.toString();
     }
 
@@ -65,7 +65,7 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
      */
     @Override
     protected void onPostExecute(String result) {
-        SendLogViaEmail(result);
+        sendLogViaEmail(result);
     }
 
     /**
@@ -73,7 +73,7 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
      * @param stringBuilder
      * @return
      */
-    private void ReadSdLog(StringBuilder stringBuilder)
+    private void readSdLog(StringBuilder stringBuilder)
     {
         File sdcard = Environment.getExternalStorageDirectory();
         File file = new File(sdcard,LOG_FILENAME);
@@ -88,7 +88,7 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
             }
         }
         catch (IOException e) {
-            _log.error(String.format("collectAndSendLog failed"), e);
+            log.error(String.format("collectAndSendLog failed"), e);
         }
     }
 
@@ -96,26 +96,26 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
      * Launch an email intent.
      * @param logText text for the body of the email
      */
-    private void SendLogViaEmail(String logText) {
+    private void sendLogViaEmail(String logText) {
 
         Intent email = new Intent(Intent.ACTION_SEND);
         email.setType("message/rfc822");
         email.putExtra(Intent.EXTRA_EMAIL, SEND_TO_MAILBOXES);
-        email.putExtra(Intent.EXTRA_SUBJECT, "Holiday Logs " + _reportTitle);
+        email.putExtra(Intent.EXTRA_SUBJECT, "Holiday Logs " + reportTitle);
         email.putExtra(Intent.EXTRA_TEXT, logText);
 
-        _context.startActivity(Intent.createChooser(email, "Send logs..."));
+        context.startActivity(Intent.createChooser(email, "Send logs..."));
     }
 
     /**
      * Get as many details about the environment as possible
      * @param stringBuilder a string builder containing our crash report
      */
-    public void GetEnvironmentDetails(StringBuilder stringBuilder) {
+    public void getEnvironmentDetails(StringBuilder stringBuilder) {
         try {
 
             // Report Title
-            _reportTitle = android.os.Build.MODEL + " " + android.os.Build.VERSION.RELEASE;
+            reportTitle = android.os.Build.MODEL + " " + android.os.Build.VERSION.RELEASE;
 
             // Basics
             stringBuilder.append("MODEL: ");
@@ -139,7 +139,7 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
             stringBuilder.append(LINE_SEPARATOR);
 
             // Get information from package manager
-            final PackageManagerWrapper packageManagerWrapper = new PackageManagerWrapper(_context);
+            final PackageManagerWrapper packageManagerWrapper = new PackageManagerWrapper(context);
             final PackageInfo packageInfo = packageManagerWrapper.getPackageInfo();
 
             if (packageInfo != null) {
@@ -158,7 +158,7 @@ public class LogShipperAsyncTask extends AsyncTask<Void, Void, String> {
             stringBuilder.append(LINE_SEPARATOR);
 
         } catch (RuntimeException ex) {
-            _log.error("Error while retrieving environmental data", ex);
+            log.error("Error while retrieving environmental data", ex);
         }
     }
 

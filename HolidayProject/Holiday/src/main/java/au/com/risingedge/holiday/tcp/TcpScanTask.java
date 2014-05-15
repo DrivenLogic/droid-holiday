@@ -29,20 +29,20 @@ import java.net.*;
  */
 public class TcpScanTask extends AsyncTask<Void, Void, Void> {
 
-    private Logger _log = LoggerFactory.getLogger(TcpScanTask.class);
+    private Logger log = LoggerFactory.getLogger(TcpScanTask.class);
     private static final int TIMEOUT = 300; // Should be plenty for a lan.
-    private IHolidayScannerListener _callbackListener;
-    private ServiceResults _serviceResults = new ServiceResults();
+    private IHolidayScannerListener callbackListener;
+    private ServiceResults serviceResults = new ServiceResults();
 
     public TcpScanTask(IHolidayScannerListener callbackListener)
     {
-        _callbackListener = callbackListener;
+        this.callbackListener = callbackListener;
     }
 
     /** Notify callback that we are starting work */
     @Override
     protected void onPreExecute() {
-        _callbackListener.onScanStart("Running a deep scan... this will take awhile...");
+        callbackListener.onScanStart("Running a deep scan... this will take awhile...");
         super.onPreExecute();
     }
 
@@ -53,7 +53,7 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
      */
     @Override
     protected Void doInBackground(Void... voids) {
-        RunTcpScan();
+        runTcpScan();
         return null;
     }
 
@@ -65,7 +65,7 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
         super.onPostExecute(v);
 
 
-        _callbackListener.onScanResults(_serviceResults);
+        callbackListener.onScanResults(serviceResults);
     }
 
     /**
@@ -73,7 +73,7 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
      *
      * TODO: Split up the range and process with extra threads
      */
-    private void RunTcpScan()
+    private void runTcpScan()
     {
         String ipAddress = new NetworkInfrastructure().getLocalInetAddress().getHostAddress();
 
@@ -105,7 +105,7 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
             }
         }
 
-        _log.info("Holiday TCP Scan Complete...");
+        log.info("Holiday TCP Scan Complete...");
     }
 
     /**
@@ -123,7 +123,7 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
 
         socket.connect(address, TIMEOUT);
 
-        _log.debug("Ip: " + ip + " appears to be open... on port: " + port);
+        log.debug("Ip: " + ip + " appears to be open... on port: " + port);
 
         socket.close();
 
@@ -157,15 +157,15 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
 
             if(jsonResult!=null)
             {
-                _log.debug("json result: " + jsonResult);
+                log.debug("json result: " + jsonResult);
 
                 JSONObject jsonObject = new JSONObject(jsonResult);
 
                 String hostName = jsonObject.getString("host_name");
                 String apiVersion = jsonObject.getString("version");
 
-                _log.debug("Found Holiday " +hostName+ " with IOTAS API version: " + apiVersion);
-                _serviceResults.addServiceResult(new ServiceResult("http://" + ip, hostName, ServiceResult.ScanType.TCP_SCAN));
+                log.debug("Found Holiday " +hostName+ " with IOTAS API version: " + apiVersion);
+                serviceResults.addServiceResult(new ServiceResult("http://" + ip, hostName, ServiceResult.ScanType.TCP_SCAN));
             }
         }
 
@@ -184,7 +184,7 @@ public class TcpScanTask extends AsyncTask<Void, Void, Void> {
             inetAddress = InetAddress.getByAddress(ip);
             return inetAddress.isSiteLocalAddress(); // let java sort it out.
         } catch (UnknownHostException e) {
-            _log.debug("Ip private range check failed ", e);
+            log.debug("Ip private range check failed ", e);
             return false;
         }
     }
