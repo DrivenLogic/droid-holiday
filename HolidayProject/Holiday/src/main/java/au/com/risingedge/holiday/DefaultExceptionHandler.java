@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler
 {
-    private Logger _log = LoggerFactory.getLogger(DefaultExceptionHandler.class);
+    private Logger log = LoggerFactory.getLogger(DefaultExceptionHandler.class);
 
     /** Constructor */
     public DefaultExceptionHandler()
@@ -27,7 +27,7 @@ public class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler
 	public void uncaughtException(Thread thread, Throwable throwable)
 	{
         throwable.printStackTrace();
-        _log.error("Thread unhandled exception handler fired! ",throwable);
+        log.error("Thread unhandled exception handler fired! ",throwable);
 
         System.exit(1);
     }

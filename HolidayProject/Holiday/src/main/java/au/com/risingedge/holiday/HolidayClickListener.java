@@ -18,9 +18,9 @@ import android.view.View;
  */
 public class HolidayClickListener implements View.OnClickListener
 {
-    String _url;
-    Activity _activity;
-    ServiceResult.ScanType _scanType;
+    String url;
+    Activity activity;
+    ServiceResult.ScanType scanType;
 
     /**
      * Constructor
@@ -29,35 +29,35 @@ public class HolidayClickListener implements View.OnClickListener
      * @param activity current activity
      */
     public HolidayClickListener(String url, Activity activity, ServiceResult.ScanType scanType) {
-        _url = url;
-        _activity = activity;
-        _scanType = scanType;
+        this.url = url;
+        this.activity = activity;
+        this.scanType = scanType;
     }
 
     /** OnClick Open a web intent in the default browser */
     @Override
     public void onClick(View view)
     {
-        if(_scanType== ServiceResult.ScanType.TCP_SCAN)
+        if(scanType == ServiceResult.ScanType.TCP_SCAN)
         {
-            ShowDialogBookmark();
+            showDialogBookmark();
         }
         else
         {
-            InvokeBrowserIntent();
+            invokeBrowserIntent();
         }
     }
 
     /**
      * Bookmark notice dialog
      */
-    private void ShowDialogBookmark() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(_activity);
+    private void showDialogBookmark() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setMessage(R.string.tcp_result_warning)
                 .setCancelable(true)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        InvokeBrowserIntent();
+                        invokeBrowserIntent();
                     }
                 });
         AlertDialog alert = builder.create();
@@ -67,10 +67,10 @@ public class HolidayClickListener implements View.OnClickListener
     /**
      * Invoke a browser intent pointed at the holidays control panel
      */
-    private void InvokeBrowserIntent()
+    private void invokeBrowserIntent()
     {
         Intent i = new Intent(Intent.ACTION_VIEW);
-        i.setData(Uri.parse(_url));
-        _activity.startActivity(i);
+        i.setData(Uri.parse(url));
+        activity.startActivity(i);
     }
 }

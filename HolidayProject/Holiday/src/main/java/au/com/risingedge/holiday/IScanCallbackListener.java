@@ -12,12 +12,12 @@ package au.com.risingedge.holiday;
 public interface IScanCallbackListener {
 
     /** Found a Service */
-    void ServiceLocated(ServiceResult serviceResult);
+    void serviceLocated(ServiceResult serviceResult);
 
     /** Task is looking for services */
-    void ScanStarted(String message);
+    void scanStarted(String message);
 
     /** done looking */
-    void ScanCompleted();
+    void scanCompleted();
 
 }

@@ -7,14 +7,14 @@ import java.util.ArrayList;
  */
 public class ServiceResults {
 
-    private ArrayList<ServiceResult> _serviceResults = new ArrayList<ServiceResult>();
+    private ArrayList<ServiceResult> serviceResults = new ArrayList<ServiceResult>();
 
-    public boolean AddServiceResult(ServiceResult serviceResult)
+    public boolean addServiceResult(ServiceResult serviceResult)
     {
-        for (ServiceResult existingServiceResult : _serviceResults) {
+        for (ServiceResult existingServiceResult : serviceResults) {
 
             // it's here already
-            if (existingServiceResult.get_location().equals(serviceResult.get_location())) {
+            if (existingServiceResult.getLocation().equals(serviceResult.getLocation())) {
                 return false;
 
                 // hostname change?
@@ -22,16 +22,16 @@ public class ServiceResults {
         }
 
         // it's not here (keyed by location) so add it.
-        _serviceResults.add(serviceResult);
+        serviceResults.add(serviceResult);
         return true;
     }
 
-    public int Size(){
-        return _serviceResults.size();
+    public int size(){
+        return serviceResults.size();
     }
 
-    public ArrayList<ServiceResult> GetResults()
+    public ArrayList<ServiceResult> getResults()
     {
-        return _serviceResults;
+        return serviceResults;
     }
 }
