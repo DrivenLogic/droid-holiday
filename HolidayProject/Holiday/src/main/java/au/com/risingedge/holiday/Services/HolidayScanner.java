@@ -126,7 +126,8 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
                     // if the service results collection is empty and it's been long enough...
                     if ((serviceResults.size() > 0) || (elapsedMilliSeconds > SCAN_TIMEOUT_MILLIS)) {
                         if (listener != null) {
-                            listener.onScanResults(serviceResults);
+                            listener.onScanResults(new ServiceResults()); // todo remove
+//                            listener.onScanResults(serviceResults);
                         }
                     }
                 }
