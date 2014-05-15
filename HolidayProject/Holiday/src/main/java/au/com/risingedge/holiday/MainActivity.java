@@ -7,6 +7,7 @@ package au.com.risingedge.holiday;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -156,10 +157,18 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
      * @param message the message to show in the spinner
      */
     @Override
-    public void onScanStart(String message) {
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage(message);
-        progressDialog.show();
+    public void onScanStart(final String message) {
+        final Context context = this;
+
+        // make sure we run all callbacks on the ui thread
+        runOnUiThread(new Runnable() {
+            @Override public void run() {
+                progressDialog = new ProgressDialog(context);
+                progressDialog.setMessage(message);
+                progressDialog.show();
+            }
+        });
+
     }
 
 
@@ -169,20 +178,25 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
      * @param serviceResults
      */
     @Override
-    public void onScanResults(ServiceResults serviceResults) {
+    public void onScanResults(final ServiceResults serviceResults) {
         log.debug("onScanResults: size= " + serviceResults.size());
-        if (progressDialog != null && progressDialog.isShowing()) {
-            //hide the dialog
-            progressDialog.dismiss();
-        }
 
-        if (serviceResults.size() <= 0){
-            ShowNoResultsControls();
-            return;
-        }
+        runOnUiThread(new Runnable() {
+            @Override public void run() {
+                if (progressDialog != null && progressDialog.isShowing()) {
+                    //hide the dialog
+                    progressDialog.dismiss();
+                }
 
-        // bind the GUI to the results.
-        BindHolidayControls(serviceResults);
+                if (serviceResults.size() <= 0) {
+                    ShowNoResultsControls();
+                    return;
+                }
+
+                // bind the GUI to the results.
+                BindHolidayControls(serviceResults);
+            }
+        });
     }
 
     /** Restart the Activity in a way that works with devices pre API 11 */

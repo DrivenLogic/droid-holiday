@@ -30,14 +30,14 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
     private Logger log = LoggerFactory.getLogger(HolidayScanner.class);
     private IHolidayScannerListener listener;
     private ServiceResults serviceResults = new ServiceResults();
-    private Handler uiHandler;
+    private Handler handler;
 
     public HolidayScanner(Context context) {
         this.context = context;
     }
 
     public void onCreate() {
-        uiHandler = new Handler(); // a handle created on the UI thread.
+        handler = new Handler(); // a handle created on the UI thread.
     }
 
     public void onDestroy() {
@@ -55,53 +55,43 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
         multicastLock.setReferenceCounted(true);
         multicastLock.acquire();
 
-        new Thread(new MdnsRunnable(this, wifiManager, uiHandler)).start();
+        new Thread(new MdnsRunnable(this)).start();
 
         log.debug("Scan running");
+        monitorMdnsResults();
+    }
 
+    private void monitorMdnsResults() {
         // track scan time
         final long ScanStartTime = SystemClock.elapsedRealtime();
 
         // JMDNS has some quirks that need to be worked around.
         // an an interval check for a lack of results.
+        int initialDelay = 4000;   // first check.
+        int monitorFrequency = 1500; // subsequent checks...
+
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
+                long elapsedMilliSeconds = SystemClock.elapsedRealtime() - ScanStartTime;
 
-                // post on the UI message pump
-                uiHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
+                // if the service results collection is empty and it's been long enough...
+                if ((serviceResults.size() > 0) || (elapsedMilliSeconds > SCAN_TIMEOUT_MILLIS)) {
+                    listener.onScanResults(serviceResults);
+                }
 
-                        long endTime = SystemClock.elapsedRealtime();
-                        long elapsedMilliSeconds = endTime - ScanStartTime;
-
-                        CheckResults(elapsedMilliSeconds);
-                    }
-                });
             }
-
-        }, 4000 // first check.
-                , 1500); // subsequent checks...
+        }, monitorFrequency, monitorFrequency);
     }
 
     @Override
-    public void beginTcpScan(){
+    public void beginTcpScan() {
         new TcpScanTask(listener).execute();
     }
 
-    /** See if the asynchronous scan operation has yielded any results */
-    private void CheckResults(long scanTime) {
-
-        // if the service results collection is empty and it's been long enough...
-        if ((serviceResults.size() > 0) || (scanTime > SCAN_TIMEOUT_MILLIS)) {
-            listener.onScanResults(serviceResults);
-        }
-    }
-
     @Override
-    public void registerListener(IHolidayScannerListener listener){
+    public void registerListener(IHolidayScannerListener listener) {
         this.listener = listener;
     }
 
@@ -113,7 +103,9 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
      */
     @Override
     public void ServiceLocated(ServiceResult serviceResult) {
-        serviceResults.addServiceResult(serviceResult);
+        synchronized (serviceResults) {
+            serviceResults.addServiceResult(serviceResult);
+        }
     }
 
     /**
@@ -129,6 +121,8 @@ public class HolidayScanner extends Binder implements IHolidayScanner, IScanCall
      * done looking
      */
     @Override public void ScanCompleted() {
-        listener.onScanResults(serviceResults);
+        synchronized (serviceResults) {
+            listener.onScanResults(serviceResults);
+        }
     }
 }
