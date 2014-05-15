@@ -200,13 +200,13 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
      */
     private void beginHolidaySearch() {
 
-        if (BatteryIsLow()) {
+        if (batteryIsLow()) {
             // warn that batter is low and scanning may be affected
-            ShowDialogBatteryAlert(getResources().getString(R.string.battery_low_warning));
+            showDialogBatteryAlert(getResources().getString(R.string.battery_low_warning));
         }
 
         // check that WiFi is enabled - if not warn user and open wif
-        if (!CheckWifi()) {
+        if (!checkWifi()) {
             return;
         }
 
@@ -229,7 +229,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
                     runOnUiThread(new Runnable() {
                         @Override public void run() {
                             hideProgressDialog();
-                            ShowNoResultsControls();
+                            showNoResultsControls();
                         }
                     });
                 }
@@ -358,17 +358,11 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
         linearLayout.removeAllViews();
         linearLayout.invalidate();
 
-        for(ServiceResult serviceResult : serviceResults.getResults())
-        {
-            ImageView imageView = new ImageView(this);
-            imageView.setImageResource(R.drawable.device);
-            imageView.setScaleType(ImageView.ScaleType.CENTER);
-            imageView.setOnClickListener(new HolidayClickListener(serviceResult.get_location(), this,serviceResult.getScanType()));
-            linearLayout.addView(imageView);
+        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        for (ServiceResult serviceResult : serviceResults.GetResults()) {
+        for (ServiceResult serviceResult : serviceResults.getResults()) {
             View control = inflater.inflate(R.layout.holiday_control, linearLayout, false);
-            control.setOnClickListener(new HolidayClickListener(serviceResult.get_location(), this, serviceResult.getScanType()));
+            control.setOnClickListener(new HolidayClickListener(serviceResult.getLocation(), this, serviceResult.getScanType()));
 
             TextView textView = (TextView) control.findViewById(R.id.holiday_name);
             textView.setText(serviceResult.getName());
@@ -395,7 +389,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
                 @Override
                 public void onClick(View view) {
                     linearLayout.removeAllViews();
-                    ShowDialogTcpScanWarning();
+                    showDialogTcpScanWarning();
                 }
             });
 

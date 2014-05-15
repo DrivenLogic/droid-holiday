@@ -70,7 +70,7 @@ public class MdnsScanner implements Handler.Callback {
         if (threadMessageHandler != null){
             threadMessageHandler.sendEmptyMessage(STOP_SCAN);
         }
-        _callbackListener = null;
+        callbacklistener = null;
 
     }
 
@@ -143,8 +143,8 @@ public class MdnsScanner implements Handler.Callback {
             log.info("Service resolved: " + serviceEvent.getInfo());
 
             if ((serviceEvent.getInfo().getURL() != null) && (serviceEvent.getInfo().getName() != null)) {
-                if (callbackListener != null) {
-                    callbackListener.ServiceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
+                if (callbacklistener != null) {
+                    callbacklistener.serviceLocated(new ServiceResult(serviceEvent.getInfo().getURL(), serviceEvent.getInfo().getName(), ServiceResult.ScanType.JMDMS));
                 }
             }
             else {
