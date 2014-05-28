@@ -2,11 +2,6 @@ package au.com.risingedge.holiday.Services;
 
 import au.com.risingedge.holiday.ServiceResults;
 
-/**
- * Copyright (C) 2014 Tapestry International Limited. All rights reserved.
- * User: travis
- * Date: 14/05/2014
- */
 public interface IHolidayScannerListener {
     void onScanStart(String message);
 
