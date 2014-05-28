@@ -40,9 +40,7 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
 
     private static final int NO_RESULTS_VIEW_ID = 1024;
     private static final long SCAN_TIMEOUT_MILLIS = 10000;
-
     private enum ViewState {UNINITIALIZED, MDNS_SCAN_IN_PROGRESS, TCP_SCAN_IN_PROGRESS, NO_CONTROLS_FOUND, CONTROLS_FOUND}
-
     private ViewState viewState = ViewState.UNINITIALIZED;
 
     private Logger log = LoggerFactory.getLogger(MainActivity.class);
@@ -127,14 +125,10 @@ public class MainActivity extends Activity implements IHolidayScanServiceConnect
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
 
-            case R.id.action_rescan:
-                activityRestart(); // suspect
-                return true;
-
             case R.id.action_help:
                 // Holiday help URL
                 Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(getResources().getString(R.string.tcp_scan_warning)));
+                i.setData(Uri.parse(getResources().getString(R.string.help_url)));
                 this.startActivity(i);
                 return true;
 
