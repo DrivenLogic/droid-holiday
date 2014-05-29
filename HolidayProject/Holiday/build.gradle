@@ -22,12 +22,7 @@ android {
     }
 
     signingConfigs {
-        release {
-            storeFile file("release.keystore")
-            storePassword "******"
-            keyAlias "******"
-            keyPassword "******"
-        }
+        release
     }
     buildTypes {
         release {
@@ -35,6 +30,12 @@ android {
         }
     }
 }
+
+android.signingConfigs.release.storePassword = keystorePassword
+android.signingConfigs.release.keyAlias = keystoreAlias
+android.signingConfigs.release.keyPassword = keyPassword
+android.signingConfigs.release.storeFile = file(keystorePath)
+
 
 dependencies {
     compile files('lib/jmdns-3.4.1.jar')
