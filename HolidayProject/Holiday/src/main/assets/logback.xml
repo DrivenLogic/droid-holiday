@@ -9,6 +9,7 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${EXTERNAL_STORAGE}/Holiday.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
             <fileNamePattern>${EXTERNAL_STORAGE}/Holiday.%d{yyyy-MM-dd}.log</fileNamePattern>
